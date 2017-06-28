@@ -466,6 +466,8 @@ public:
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
 
+		//cout << ray.direction->getX() << "-" << ray.direction->getY() << "-" << ray.direction->getZ() << ", test:" << this << endl;
+
 		float angle = dotProduct(*normal, *ray.direction);
 		if (angle > 0)
 			return false; // behind ray start
@@ -515,6 +517,7 @@ public:
 
 		I = I - *ray.origin; // Z I udelam pouze vektor od zacatku k bodu pruniku pro vypocitani vzdalenosti
 		tHit = sqrt((I.getX() * I.getX()) + (I.getY()* I.getY()) + (I.getZ() * I.getZ()));
+		
 		return 1;                       // I is in T
 
 

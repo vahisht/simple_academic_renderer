@@ -10,6 +10,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <typeinfo>
 #include <algorithm>
 #include <stack>
 
@@ -139,6 +140,7 @@ public:
 		scene_primitives.push_back(new Sphere(x, y, z, _radius, used_material));
 	}
 	void AddPrimitive(sglEElementType _object_type, vector<Vertex*>* _vertices, bool emissive) {
+		
 		if (emissive) {
 			scene_emissives.push_back(new Triangle(_object_type, _vertices, used_material));
 			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_material));
@@ -155,18 +157,19 @@ public:
 		DrawObject* object = NULL;
 		dist = numeric_limits<float>::max();		// tady by asi bylo lepší mít far plane scény spíše než nekonečno. Věci co jsou za far plane už totiž nekreslíme
 		float tmp;
-		for (vector<DrawObject*>::iterator it = scene_primitives.begin(); it != scene_primitives.end(); it++){
+		for (vector<Triangle*>::iterator it = scene_triangles.begin(); it != scene_triangles.end(); it++){
+			//cout << typeid(*it).name() << endl;
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
 				dist = tmp;
 				object = (*it);
 			}
 		}
-		for (vector<DrawObject*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
+		/*for (vector<DrawObject*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
 				dist = tmp;
 				object = (*it);
 			}
-		}
+		}*/
 		return object;
 	}
 	DrawObject* FindShadowIntersection(Ray &ray, float & dist, DrawObject* obj) {
@@ -218,11 +221,12 @@ public:
 			Ray shadowRay(hit.getX(), hit.getY(), hit.getZ(), (*it)->GetPosition()->getX(), (*it)->GetPosition()->getY(), (*it)->GetPosition()->getZ());
 			
 			kd_scene->FindKDIntersection(shadowRay, cmp);
+			//scene->FindShadowIntersection(shadowRay, cmp, object);
 			light_dst = sqrt(dir_to_light.getX()*dir_to_light.getX() + dir_to_light.getY()*dir_to_light.getY() + dir_to_light.getZ()*dir_to_light.getZ());
 
 			// something's blocking the light
-			if (cmp < (light_dst - 0.01f) && cmp > 0.01f)
-				continue;
+			/*if (cmp < (light_dst - 0.01f) && cmp > 0.01f)
+				continue;*/
 
 			float ppower = obj_material->getShine();
 			dir_to_light.normalizeThis();
@@ -235,7 +239,7 @@ public:
 		}
 
 		// for DPG there is no need for mirror rays
-		//return color;
+		return color;
 
 		if (level > 8) return color;
 
@@ -1714,6 +1718,7 @@ void sglBuildKdTree() {
 
 void sglRayTraceScene() {
 	DrawObject* draw_obj;
+	DrawObject *jedna, *druhy;
 
 	//kd_scene->printOutTree();
 
@@ -1765,8 +1770,18 @@ void sglRayTraceScene() {
 				setPixel(x, y, 1);
 				continue;
 			} else*/ {
+			
+			/*if (jedna || druhy) {
+				cout << "--------" << endl;
+				cout << r.direction->getX() << "-" << r.direction->getY() << "-" << r.direction->getZ() << endl;
+				cout << "Normal: " << jedna << endl;
+				cout << "kd: " << druhy << endl;
+			}*/
+
 			//draw_obj = scene->FindIntersection(r, dist);
-			draw_obj = kd_scene->FindKDIntersection(r, dist);
+			 draw_obj = kd_scene->FindKDIntersection(r, dist);
+
+			//if (draw_obj) cout << draw_obj << endl;
 			}
 
 			if (draw_obj) {

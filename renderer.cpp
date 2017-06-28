@@ -366,6 +366,7 @@ RayTraceAssimpScene(const char *scenename)
 		mat->Get(AI_MATKEY_SHININESS, shininess);
 		sglMaterial(color.r, color.g, color.b, 1.0f, (specular.r + specular.g + specular.b) / 3.0f, shininess, 0.0f, 0.0f);
 
+
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
 			aiFace *face = &mesh->mFaces[j];
 
@@ -673,7 +674,9 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/sibenik";				// pozor na umístìní svìtla
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
-   const char *sceneFile = "Data/plysak_normalized";		// naprosto špatný materiál
+   //const char *sceneFile = "Data/plysak_normalized";		
+   const char *sceneFile = "Data/cornellbox-empty-rg";
+   //const char *sceneFile = "Data/cornellbox-sphere";
 
    if (argc > 1) {
 	   //cout << argv[1] << endl;
