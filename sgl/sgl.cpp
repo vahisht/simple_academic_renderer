@@ -191,6 +191,7 @@ public:
 	}
 
 	Vector3f Illuminate(DrawObject* object, Ray &ray, float distance, int level) {
+		//return Vector3f(1, 1, 1);
 		if (object->GetMaterial()->Emissive()) {
 			MaterialEmissive* obj_emis_material = (MaterialEmissive*)(object->GetMaterial());
 			return obj_emis_material->GetIntensity();
@@ -234,7 +235,7 @@ public:
 		}
 
 		// for DPG there is no need for mirror rays
-		return color;
+		//return color;
 
 		if (level > 8) return color;
 

@@ -1,5 +1,5 @@
-testapp.VC.db
-testapp.VC.VC.opendb
+renderer.VC.db
+renderer.VC.VC.opendb
 Release/*
 Debug/*
 x64/*
