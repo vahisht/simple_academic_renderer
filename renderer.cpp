@@ -126,8 +126,8 @@ void WriteTGA(
 
 /// like gluLookAt
 void sgluLookAt(float eyex   , float eyey   , float eyez,
-                float centerx, float centery, float centerz,
-                float upx    , float upy    , float upz)
+				float centerx, float centery, float centerz,
+				float upx    , float upy    , float upz)
 {
   float    sqrmag;
 
@@ -137,7 +137,7 @@ void sgluLookAt(float eyex   , float eyey   , float eyez,
   Vector3  z(eyex-centerx,eyey-centery,eyez-centerz);
   sqrmag = SqrMagnitude(z);
   if(sqrmag)
-    z /= sqrtf(sqrmag);
+	z /= sqrtf(sqrmag);
 
   /* Y vector */
   Vector3 y(upx,upy,upz);
@@ -147,23 +147,23 @@ void sgluLookAt(float eyex   , float eyey   , float eyez,
 
   sqrmag = SqrMagnitude(x);
   if(sqrmag)
-    x /= sqrtf(sqrmag);
+	x /= sqrtf(sqrmag);
 
   /* Recompute Y = Z cross X */
   y = CrossProd(z,x);
 
   sqrmag = SqrMagnitude(y);
   if(sqrmag)
-    y /= sqrtf(sqrmag);
+	y /= sqrtf(sqrmag);
 
   float m[] = {
-    x.x, y.x, z.x, 0, // col 1
-    x.y, y.y, z.y, 0, // col 2
-    x.z, y.z, z.z, 0, // col 3
-    - eyex*x.x - eyey*x.y - eyez*x.z , // col 4
-    - eyex*y.x - eyey*y.y - eyez*y.z , // col 4
-    - eyex*z.x - eyey*z.y - eyez*z.z , // col 4
-    1.0};                              // col 4
+	x.x, y.x, z.x, 0, // col 1
+	x.y, y.y, z.y, 0, // col 2
+	x.z, y.z, z.z, 0, // col 3
+	- eyex*x.x - eyey*x.y - eyez*x.z , // col 4
+	- eyex*y.x - eyey*y.y - eyez*y.z , // col 4
+	- eyex*z.x - eyey*z.y - eyez*z.z , // col 4
+	1.0};                              // col 4
 
 	sglMultMatrix(m);
 }
@@ -186,14 +186,14 @@ RayTraceScene(const char *scenename)
   
   FILE *f = fopen(scenename,"rt");
   if(!f) {
-    cerr << "RTS: Could not open " << scenename << " for reading." << std::endl;
-    return 0;
+	cerr << "RTS: Could not open " << scenename << " for reading." << std::endl;
+	return 0;
   }
   
   char errstring[4000];
   if( ReadNFF(f,errstring,&nffstore) < 0 ) {
-    cerr << "Error in NFF file " << scenename << ":\n" << errstring << std::endl;
-    return 0;
+	cerr << "Error in NFF file " << scenename << ":\n" << errstring << std::endl;
+	return 0;
   }
 
   cout << "NFF file " << scenename << " successfully parsed." << endl;
@@ -489,7 +489,7 @@ void Init(void)
   sglInit();
   for(int i=0; i<10; i++) _contexts[i]=-1;
   for(int i=0; i<NUM_CONTEXTS; i++)
-    _contexts[i] = sglCreateContext(WIDTH, HEIGHT);
+	_contexts[i] = sglCreateContext(WIDTH, HEIGHT);
   sglSetContext(_contexts[0]);
 }
 
@@ -511,7 +511,7 @@ myDisplay(void)
   float *cb = sglGetColorBufferPointer();
 	
   if(cb)
-    glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_FLOAT, cb);
+	glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_FLOAT, cb);
 	
   // swap buffers (float buffering)
   glutSwapBuffers();
@@ -534,20 +534,20 @@ void mySpecial (int key, int x, int y)
 {
   /// rotate and translate cubes in test 2C
   switch(key) {
-    case GLUT_KEY_LEFT: 
-      tx -= tstep; break;
-    case GLUT_KEY_UP:
-      ty += tstep; break;
-    case GLUT_KEY_RIGHT:
-      tx += tstep; break;
-    case GLUT_KEY_DOWN:
-      ty -= tstep; break;
-    case GLUT_KEY_PAGE_UP:
-      tz += tstep; break;
-    case GLUT_KEY_PAGE_DOWN:
-      tz -= tstep; break;
-    case 'r':
-      rot += rotstep; break;
+	case GLUT_KEY_LEFT: 
+	  tx -= tstep; break;
+	case GLUT_KEY_UP:
+	  ty += tstep; break;
+	case GLUT_KEY_RIGHT:
+	  tx += tstep; break;
+	case GLUT_KEY_DOWN:
+	  ty -= tstep; break;
+	case GLUT_KEY_PAGE_UP:
+	  tz += tstep; break;
+	case GLUT_KEY_PAGE_DOWN:
+	  tz -= tstep; break;
+	case 'r':
+	  rot += rotstep; break;
   }
 
   sglSetContext(_contexts[5]);
@@ -564,33 +564,33 @@ void mySpecial (int key, int x, int y)
 void myKeyboard (unsigned char key, int x, int y)
 {
   switch (key) {
-    // application finishes upon pressing q
-    case 'r':
-      mySpecial(key,x,y); break;
-    case 'q':
-    case 'Q':
-    case 27:
-      CleanUp();
-      exit (0);
-      break;
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9': 
-      {
-        sglSetContext(_contexts[key-'0']);
-        sglEErrorCode err = sglGetError();
-        if(err != SGL_NO_ERROR)
-          cerr << "Failed to switch context: " << sglGetErrorString(err) << endl;
-      }
-      glutPostRedisplay();
-      break;
+	// application finishes upon pressing q
+	case 'r':
+	  mySpecial(key,x,y); break;
+	case 'q':
+	case 'Q':
+	case 27:
+	  CleanUp();
+	  exit (0);
+	  break;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9': 
+	  {
+		sglSetContext(_contexts[key-'0']);
+		sglEErrorCode err = sglGetError();
+		if(err != SGL_NO_ERROR)
+		  cerr << "Failed to switch context: " << sglGetErrorString(err) << endl;
+	  }
+	  glutPostRedisplay();
+	  break;
   }
 }
 
