@@ -26,7 +26,6 @@
 #endif
 
 #include "sgl.h"
-#include "timer.h"
 #include "nffread.h"
 #include "nffstore.h"
 #include <assimp/Importer.hpp>
@@ -184,8 +183,7 @@ float
 RayTraceScene(const char *scenename)
 {
   NFFStore nffstore(false);
-  Timer timer;
-
+  
   FILE *f = fopen(scenename,"rt");
   if(!f) {
     cerr << "RTS: Could not open " << scenename << " for reading." << std::endl;
@@ -200,8 +198,7 @@ RayTraceScene(const char *scenename)
 
   cout << "NFF file " << scenename << " successfully parsed." << endl;
 
-  timer.Restart();
-
+  
   // projection transformation
   sglMatrixMode(SGL_PROJECTION);
   sglLoadIdentity();
@@ -327,14 +324,13 @@ RayTraceScene(const char *scenename)
   sglBuildKdTree();
   sglRayTraceScene();
   //sglRasterizeScene();
-  return timer.UserTime();
+  return 0.0f;
 }
 
 
 float
 RayTraceAssimpScene(const char *scenename)
 {	
-	Timer timer;
 	Assimp::Importer importer;
 	string scenename_obj = string(scenename) + ".obj";
 	const aiScene *scene = importer.ReadFile(scenename_obj, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices );
@@ -476,15 +472,13 @@ RayTraceAssimpScene(const char *scenename)
 	sgluLookAt(
 		from_x, from_y, from_z, at_x, at_y, at_z, up_x, up_y, up_z );
 
-	timer.Restart();
 	sglBuildKdTree();
-	cout << "KD-tree built in: " << timer.UserTime() << endl;
-	timer.Restart();
+	cout << "KD-tree built" << endl;
 	// compute a ray traced image and store it in the color buffer
 	sglRayTraceScene();
-	cout << "Rendering done in: " << timer.UserTime() << endl;
+	cout << "Rendering done" << endl;
 	//sglRasterizeScene();
-	return timer.UserTime();
+	return 0.0f;
 }
 
 
@@ -601,6 +595,8 @@ void myKeyboard (unsigned char key, int x, int y)
 
 #endif
 
+/// Function splitting given file path into a vector of strings, where each string is a folder/file on the path to the file
+/// The last element contains the filename
 std::vector<std::string> splitpath(
 	const std::string& str
 	, const std::set<char> delimiters)
@@ -651,12 +647,6 @@ int main(int argc, char **argv)
   // init SGL
   Init();
   
-  // run and benchmark the tests
-  Timer timer;
-  float time;
-  
-  double totalTime = 0;
-
   ofstream resultsInfo("results/desc.neon");
   resultsInfo<<"res:"<<endl;
 
@@ -666,13 +656,8 @@ int main(int argc, char **argv)
 	 /// read in the NFF file
 	 /*const char *sceneFile = "cornell-blocks.nff";
 	 sglSetContext(_contexts[3]);
-	 float time = RayTraceScene(sceneFile);
 	 //cout << "Starting with " << sceneFile << endl;
-	 //float time = RayTraceAssimpScene(sceneFile);
-	 totalTime += time;
-
-	 resultsInfo << "    test4a.png : " << time << endl;
-	 cout << "    test4a.png : " << time << endl;
+	 
 	 WriteTGA("results/test4a.tga");*/
 	 
 	
@@ -710,11 +695,10 @@ int main(int argc, char **argv)
    sglSetContext(_contexts[3]);
    //float time = RayTraceScene(sceneFile);
    cout << "Starting with " << sceneFile << endl;
-   time = RayTraceAssimpScene(sceneFile);
-   totalTime += time;
+   RayTraceAssimpScene(sceneFile);
    
-   resultsInfo<<"    test4a.png : "<<time<<endl;
-   cout<< filename.c_str() << " in " << time <<endl;
+   resultsInfo<<"    test4a.png "<<endl;
+   cout<< filename.c_str() <<endl;
    WriteTGA( filename.c_str() );
 
   
@@ -722,8 +706,6 @@ int main(int argc, char **argv)
   // execute main application loop for event processing
   glutMainLoop();
 #else
-  resultsInfo<<"TotalTime : "<<totalTime<<endl;
-  cout<<"TotalTime : "<<totalTime<<endl;
   CleanUp();
 #endif
   

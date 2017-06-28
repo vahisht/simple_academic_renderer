@@ -19,9 +19,6 @@
     <ClCompile Include="include\hdrloader.cpp">
       <Filter>Original</Filter>
     </ClCompile>
-    <ClCompile Include="include\timer.cpp">
-      <Filter>Original</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sgl\sgl.h">
@@ -37,9 +34,6 @@
       <Filter>Original</Filter>
     </ClInclude>
     <ClInclude Include="include\hdrloader.h">
-      <Filter>Original</Filter>
-    </ClInclude>
-    <ClInclude Include="include\timer.h">
       <Filter>Original</Filter>
     </ClInclude>
     <ClInclude Include="include\nffwrite.h">
