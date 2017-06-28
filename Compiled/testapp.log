@@ -1,0 +1,176 @@
+﻿  hdrloader.cpp
+  nffread.cpp
+nffread.cpp(172): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
+nffread.cpp(173): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
+nffread.cpp(174): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
+  kd_tree.cpp
+c:\fel\dpg\sgl\primitives.h(126): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(132): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(134): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(142): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(146): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(147): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(153): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(155): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(160): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(167): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(168): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(176): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(178): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(200): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(201): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(527): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(528): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(78): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\sgl\kd_tree.h(478): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(491): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(504): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(517): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(531): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(545): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(559): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(573): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(587): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(601): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(615): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(629): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(665): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp2': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(227): warning C4101: 'line_dir': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp1': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(961): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(18): warning C4305: 'initializing': truncation from 'double' to 'float'
+sgl\kd_tree.cpp(20): warning C4305: 'initializing': truncation from 'double' to 'float'
+sgl\kd_tree.cpp(106): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(177): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(184): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(190): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(196): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(254): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(372): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(393): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(406): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(628): warning C4018: '<': signed/unsigned mismatch
+sgl\kd_tree.cpp(634): warning C4018: '<': signed/unsigned mismatch
+  primitives.cpp
+c:\fel\dpg\sgl\primitives.h(126): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(132): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(134): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(142): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(146): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(147): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(153): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(155): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(160): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(167): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(168): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(176): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(178): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(200): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(201): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(527): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(528): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  sgl.cpp
+c:\fel\dpg\sgl\primitives.h(126): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(132): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(134): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(142): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(146): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(147): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(153): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(155): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(160): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(167): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(168): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(176): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(178): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\fel\dpg\sgl\primitives.h(200): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(201): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(527): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\primitives.h(528): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(78): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\sgl\kd_tree.h(478): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(491): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(504): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(517): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(531): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(545): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(559): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(573): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(587): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(601): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(615): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(629): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\fel\dpg\sgl\kd_tree.h(665): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp2': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(227): warning C4101: 'line_dir': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp1': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(961): warning C4018: '<': signed/unsigned mismatch
+sgl\sgl.cpp(112): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+sgl\sgl.cpp(272): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+sgl\sgl.cpp(280): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+sgl\sgl.cpp(488): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+sgl\sgl.cpp(707): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(717): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(718): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(727): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(740): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(742): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(750): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(754): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(755): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(761): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(763): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(768): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(775): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(776): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(786): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(797): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(798): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(800): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(984): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1009): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1104): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1111): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1112): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1119): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1124): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1125): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1126): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1127): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1129): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1130): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1131): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1132): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1136): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1137): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1138): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1139): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1141): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1142): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1143): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1144): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1530): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1531): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1533): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1534): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1704): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+sgl\sgl.cpp(1776): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+sgl\sgl.cpp(1784): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+  testapp.cpp
+c:\fel\dpg\sgl\kd_tree.h(78): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\sgl\kd_tree.h(665): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp2': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(227): warning C4101: 'line_dir': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(230): warning C4101: 'tmp1': unreferenced local variable
+c:\fel\dpg\sgl\kd_tree.h(961): warning C4018: '<': signed/unsigned mismatch
+c:\fel\dpg\nffstore.h(143): warning C4101: 'loader': unreferenced local variable
+testapp.cpp(159): warning C4018: '<': signed/unsigned mismatch
+testapp.cpp(1343): warning C4101: 'time': unreferenced local variable
+  timer.cpp
+  Generating Code...
+  testapp.vcxproj -> C:\FEL\DPG\Release\testapp.exe
+  testapp.vcxproj -> Release\testapp.pdb (Full PDB)

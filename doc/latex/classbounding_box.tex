@@ -1,0 +1,89 @@
+\hypertarget{classbounding_box}{}\section{bounding\+Box Class Reference}
+\label{classbounding_box}\index{bounding\+Box@{bounding\+Box}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classbounding_box_ae9d37d9ed3a53e3c7fcb7dfaba2f5e07}\label{classbounding_box_ae9d37d9ed3a53e3c7fcb7dfaba2f5e07}} 
+{\bfseries bounding\+Box} (\hyperlink{class_triangle}{Triangle} $\ast$T)
+\item 
+bool \hyperlink{classbounding_box_aa3b09cbb86a114fcbb3dba13a543efd6}{bound\+Triangle} (\hyperlink{class_triangle}{Triangle} $\ast$T)
+\item 
+bool \hyperlink{classbounding_box_ac37969db26fdc180d7ce2cf90cb1368a}{clip\+To\+Voxel} (\hyperlink{class_voxel}{Voxel} $\ast$V, \hyperlink{class_triangle}{Triangle} $\ast$T)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+float \hyperlink{classbounding_box_a6317b26fef72b8c5c8b172fcad689989}{x\+\_\+min}
+\item 
+float \hyperlink{classbounding_box_a4a04c24133f0348d4f6ea460678a6a4f}{x\+\_\+max}
+\item 
+float \hyperlink{classbounding_box_a62d9248f944ec4264ce204b96ad14788}{y\+\_\+min}
+\item 
+float \hyperlink{classbounding_box_a5c4c3748050e6f9978838040df5c3c16}{y\+\_\+max}
+\item 
+float \hyperlink{classbounding_box_a6204bf950a9f8191a3e1ef6a2afcc3d0}{z\+\_\+min}
+\item 
+float \hyperlink{classbounding_box_a99c8098d79169736c7cd7234fbea8d9a}{z\+\_\+max}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class used for representation of an A\+A\+BB -\/ Axis Aligned Bounding Box 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classbounding_box_aa3b09cbb86a114fcbb3dba13a543efd6}\label{classbounding_box_aa3b09cbb86a114fcbb3dba13a543efd6}} 
+\index{bounding\+Box@{bounding\+Box}!bound\+Triangle@{bound\+Triangle}}
+\index{bound\+Triangle@{bound\+Triangle}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{bound\+Triangle()}{boundTriangle()}}
+{\footnotesize\ttfamily bool bounding\+Box\+::bound\+Triangle (\begin{DoxyParamCaption}\item[{\hyperlink{class_triangle}{Triangle} $\ast$}]{T }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Adjusts this A\+A\+BB\textquotesingle{}s bounds to perfectly bound the given triangle \mbox{\Hypertarget{classbounding_box_ac37969db26fdc180d7ce2cf90cb1368a}\label{classbounding_box_ac37969db26fdc180d7ce2cf90cb1368a}} 
+\index{bounding\+Box@{bounding\+Box}!clip\+To\+Voxel@{clip\+To\+Voxel}}
+\index{clip\+To\+Voxel@{clip\+To\+Voxel}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{clip\+To\+Voxel()}{clipToVoxel()}}
+{\footnotesize\ttfamily bool bounding\+Box\+::clip\+To\+Voxel (\begin{DoxyParamCaption}\item[{\hyperlink{class_voxel}{Voxel} $\ast$}]{V,  }\item[{\hyperlink{class_triangle}{Triangle} $\ast$}]{T }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Adjusts this A\+A\+BB\textquotesingle{}s bound to perfectly bound the given triangle clipped by given voxel 
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classbounding_box_a4a04c24133f0348d4f6ea460678a6a4f}\label{classbounding_box_a4a04c24133f0348d4f6ea460678a6a4f}} 
+\index{bounding\+Box@{bounding\+Box}!x\+\_\+max@{x\+\_\+max}}
+\index{x\+\_\+max@{x\+\_\+max}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{x\+\_\+max}{x\_max}}
+{\footnotesize\ttfamily float bounding\+Box\+::x\+\_\+max}
+
+Largest X coordinate \mbox{\Hypertarget{classbounding_box_a6317b26fef72b8c5c8b172fcad689989}\label{classbounding_box_a6317b26fef72b8c5c8b172fcad689989}} 
+\index{bounding\+Box@{bounding\+Box}!x\+\_\+min@{x\+\_\+min}}
+\index{x\+\_\+min@{x\+\_\+min}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{x\+\_\+min}{x\_min}}
+{\footnotesize\ttfamily float bounding\+Box\+::x\+\_\+min}
+
+Smallest X coordinate \mbox{\Hypertarget{classbounding_box_a5c4c3748050e6f9978838040df5c3c16}\label{classbounding_box_a5c4c3748050e6f9978838040df5c3c16}} 
+\index{bounding\+Box@{bounding\+Box}!y\+\_\+max@{y\+\_\+max}}
+\index{y\+\_\+max@{y\+\_\+max}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{y\+\_\+max}{y\_max}}
+{\footnotesize\ttfamily float bounding\+Box\+::y\+\_\+max}
+
+Largest Y coordinate \mbox{\Hypertarget{classbounding_box_a62d9248f944ec4264ce204b96ad14788}\label{classbounding_box_a62d9248f944ec4264ce204b96ad14788}} 
+\index{bounding\+Box@{bounding\+Box}!y\+\_\+min@{y\+\_\+min}}
+\index{y\+\_\+min@{y\+\_\+min}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{y\+\_\+min}{y\_min}}
+{\footnotesize\ttfamily float bounding\+Box\+::y\+\_\+min}
+
+Smallest Y coordinate \mbox{\Hypertarget{classbounding_box_a99c8098d79169736c7cd7234fbea8d9a}\label{classbounding_box_a99c8098d79169736c7cd7234fbea8d9a}} 
+\index{bounding\+Box@{bounding\+Box}!z\+\_\+max@{z\+\_\+max}}
+\index{z\+\_\+max@{z\+\_\+max}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{z\+\_\+max}{z\_max}}
+{\footnotesize\ttfamily float bounding\+Box\+::z\+\_\+max}
+
+Largest Z coordinate \mbox{\Hypertarget{classbounding_box_a6204bf950a9f8191a3e1ef6a2afcc3d0}\label{classbounding_box_a6204bf950a9f8191a3e1ef6a2afcc3d0}} 
+\index{bounding\+Box@{bounding\+Box}!z\+\_\+min@{z\+\_\+min}}
+\index{z\+\_\+min@{z\+\_\+min}!bounding\+Box@{bounding\+Box}}
+\subsubsection{\texorpdfstring{z\+\_\+min}{z\_min}}
+{\footnotesize\ttfamily float bounding\+Box\+::z\+\_\+min}
+
+Smallest Z cordinate 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+sgl/sgl.\+cpp\end{DoxyCompactItemize}

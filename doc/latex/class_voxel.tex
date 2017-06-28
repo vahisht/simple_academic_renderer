@@ -1,0 +1,68 @@
+\hypertarget{class_voxel}{}\section{Voxel Class Reference}
+\label{class_voxel}\index{Voxel@{Voxel}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_a75fa478cf4d24275622e9d954d2bf2c7}\label{class_voxel_a75fa478cf4d24275622e9d954d2bf2c7}} 
+{\bfseries Voxel} (\hyperlink{class_vector3f}{Vector3f} \hyperlink{class_voxel_a92eee751b0eaf4d10e4b5aa8f4f749ef}{position}, float \hyperlink{class_voxel_a1e494958e8f6d557a0b9ef65fb445322}{dX}, float \hyperlink{class_voxel_ad7366d4015819afbebd6c5035d694efa}{dY}, float \hyperlink{class_voxel_a58964f88e01b0aed80e993e6aad25f24}{dZ})
+\item 
+\mbox{\Hypertarget{class_voxel_afc909b1392d8d211ec35e280eb4bb785}\label{class_voxel_afc909b1392d8d211ec35e280eb4bb785}} 
+void {\bfseries set\+Position} (\hyperlink{class_vector3f}{Vector3f} \hyperlink{class_voxel_a92eee751b0eaf4d10e4b5aa8f4f749ef}{position})
+\item 
+pair$<$ \hyperlink{class_voxel}{Voxel} $\ast$, \hyperlink{class_voxel}{Voxel} $\ast$ $>$ \hyperlink{class_voxel_ac205abe6c14926c43c021422eef6a996}{split\+By\+Plane} (\hyperlink{classsplit_plane}{split\+Plane} $\ast$p)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_vector3f}{Vector3f} \hyperlink{class_voxel_a92eee751b0eaf4d10e4b5aa8f4f749ef}{position}
+\item 
+float \hyperlink{class_voxel_a1e494958e8f6d557a0b9ef65fb445322}{dX}
+\item 
+float \hyperlink{class_voxel_ad7366d4015819afbebd6c5035d694efa}{dY}
+\item 
+float \hyperlink{class_voxel_a58964f88e01b0aed80e993e6aad25f24}{dZ}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Class used for voxel representation 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_voxel_ac205abe6c14926c43c021422eef6a996}\label{class_voxel_ac205abe6c14926c43c021422eef6a996}} 
+\index{Voxel@{Voxel}!split\+By\+Plane@{split\+By\+Plane}}
+\index{split\+By\+Plane@{split\+By\+Plane}!Voxel@{Voxel}}
+\subsubsection{\texorpdfstring{split\+By\+Plane()}{splitByPlane()}}
+{\footnotesize\ttfamily pair$<$\hyperlink{class_voxel}{Voxel}$\ast$, \hyperlink{class_voxel}{Voxel}$\ast$$>$ Voxel\+::split\+By\+Plane (\begin{DoxyParamCaption}\item[{\hyperlink{classsplit_plane}{split\+Plane} $\ast$}]{p }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Returns two voxels as a result of split operation of T\+H\+IS voxel by given plane p 
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{class_voxel_a1e494958e8f6d557a0b9ef65fb445322}\label{class_voxel_a1e494958e8f6d557a0b9ef65fb445322}} 
+\index{Voxel@{Voxel}!dX@{dX}}
+\index{dX@{dX}!Voxel@{Voxel}}
+\subsubsection{\texorpdfstring{dX}{dX}}
+{\footnotesize\ttfamily float Voxel\+::dX}
+
+Size in X axis \mbox{\Hypertarget{class_voxel_ad7366d4015819afbebd6c5035d694efa}\label{class_voxel_ad7366d4015819afbebd6c5035d694efa}} 
+\index{Voxel@{Voxel}!dY@{dY}}
+\index{dY@{dY}!Voxel@{Voxel}}
+\subsubsection{\texorpdfstring{dY}{dY}}
+{\footnotesize\ttfamily float Voxel\+::dY}
+
+Size in Y axis \mbox{\Hypertarget{class_voxel_a58964f88e01b0aed80e993e6aad25f24}\label{class_voxel_a58964f88e01b0aed80e993e6aad25f24}} 
+\index{Voxel@{Voxel}!dZ@{dZ}}
+\index{dZ@{dZ}!Voxel@{Voxel}}
+\subsubsection{\texorpdfstring{dZ}{dZ}}
+{\footnotesize\ttfamily float Voxel\+::dZ}
+
+Size in Z axis \mbox{\Hypertarget{class_voxel_a92eee751b0eaf4d10e4b5aa8f4f749ef}\label{class_voxel_a92eee751b0eaf4d10e4b5aa8f4f749ef}} 
+\index{Voxel@{Voxel}!position@{position}}
+\index{position@{position}!Voxel@{Voxel}}
+\subsubsection{\texorpdfstring{position}{position}}
+{\footnotesize\ttfamily \hyperlink{class_vector3f}{Vector3f} Voxel\+::position}
+
+Position of the corner with smallest coordinates 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+sgl/sgl.\+cpp\end{DoxyCompactItemize}

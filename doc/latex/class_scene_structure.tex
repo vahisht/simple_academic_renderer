@@ -1,0 +1,28 @@
+\hypertarget{class_scene_structure}{}\section{Scene\+Structure Class Reference}
+\label{class_scene_structure}\index{Scene\+Structure@{Scene\+Structure}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_scene_structure_ad07922a4fce33965a58d734b0012cfae}\label{class_scene_structure_ad07922a4fce33965a58d734b0012cfae}} 
+void {\bfseries Add\+Primitive} (float x, float y, float z, float \+\_\+radius)
+\item 
+\mbox{\Hypertarget{class_scene_structure_aa2e30b5b1a0a2681de75734ad7a3f1b7}\label{class_scene_structure_aa2e30b5b1a0a2681de75734ad7a3f1b7}} 
+void {\bfseries Add\+Primitive} (sgl\+E\+Element\+Type \+\_\+object\+\_\+type, vector$<$ \hyperlink{class_vertex}{Vertex} $\ast$$>$ $\ast$\+\_\+vertices, bool emissive)
+\item 
+\mbox{\Hypertarget{class_scene_structure_aa7c8ce8bb44a06f0f02801abde3eecfc}\label{class_scene_structure_aa7c8ce8bb44a06f0f02801abde3eecfc}} 
+void {\bfseries Add\+Light} (float x, float y, float z, float r, float g, float b)
+\item 
+\mbox{\Hypertarget{class_scene_structure_a8a98d6e4d0f7f33297e6c6f173c2cece}\label{class_scene_structure_a8a98d6e4d0f7f33297e6c6f173c2cece}} 
+\hyperlink{class_draw_object}{Draw\+Object} $\ast$ {\bfseries Find\+Intersection} (\hyperlink{class_ray}{Ray} \&ray, float \&dist)
+\item 
+\mbox{\Hypertarget{class_scene_structure_a072429ad6386e5f8879727b0f0734a39}\label{class_scene_structure_a072429ad6386e5f8879727b0f0734a39}} 
+\hyperlink{class_draw_object}{Draw\+Object} $\ast$ {\bfseries Find\+Shadow\+Intersection} (\hyperlink{class_ray}{Ray} \&ray, float \&dist, \hyperlink{class_draw_object}{Draw\+Object} $\ast$obj)
+\item 
+\mbox{\Hypertarget{class_scene_structure_ab1119698dc99ceb6b73c5fbe6efc5afe}\label{class_scene_structure_ab1119698dc99ceb6b73c5fbe6efc5afe}} 
+\hyperlink{class_vector3f}{Vector3f} {\bfseries Illuminate} (\hyperlink{class_draw_object}{Draw\+Object} $\ast$object, \hyperlink{class_ray}{Ray} \&ray, float distance, int level)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+sgl/sgl.\+cpp\end{DoxyCompactItemize}

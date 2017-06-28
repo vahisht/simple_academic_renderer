@@ -1,0 +1,5 @@
+testapp.VC.db
+testapp.VC.VC.opendb
+Release/*
+Debug/*
+x64/*
