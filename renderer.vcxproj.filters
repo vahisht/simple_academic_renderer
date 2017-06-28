@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="sgl\sgl.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="sgl\primitives.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="sgl\kd_tree.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="include\nffread.cpp">
+      <Filter>Original</Filter>
+    </ClCompile>
+    <ClCompile Include="include\hdrloader.cpp">
+      <Filter>Original</Filter>
+    </ClCompile>
+    <ClCompile Include="include\timer.cpp">
+      <Filter>Original</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sgl\sgl.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="sgl\primitives.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="sgl\kd_tree.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nffread.h">
+      <Filter>Original</Filter>
+    </ClInclude>
+    <ClInclude Include="include\hdrloader.h">
+      <Filter>Original</Filter>
+    </ClInclude>
+    <ClInclude Include="include\timer.h">
+      <Filter>Original</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nffwrite.h">
+      <Filter>Original</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Original">
+      <UniqueIdentifier>{24851e0b-e74f-48e0-b79e-2b84f4be10b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{50539500-4754-4b8c-903f-0dea1b379776}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
