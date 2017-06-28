@@ -10,6 +10,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <typeinfo>
 #include <algorithm>
 #include <stack>
 
@@ -139,6 +140,7 @@ public:
 		scene_primitives.push_back(new Sphere(x, y, z, _radius, used_material));
 	}
 	void AddPrimitive(sglEElementType _object_type, vector<Vertex*>* _vertices, bool emissive) {
+		
 		if (emissive) {
 			scene_emissives.push_back(new Triangle(_object_type, _vertices, used_material));
 			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_material));
@@ -155,18 +157,19 @@ public:
 		DrawObject* object = NULL;
 		dist = numeric_limits<float>::max();		// tady by asi bylo lepší mít far plane scény spíše než nekonečno. Věci co jsou za far plane už totiž nekreslíme
 		float tmp;
-		for (vector<DrawObject*>::iterator it = scene_primitives.begin(); it != scene_primitives.end(); it++){
+		for (vector<Triangle*>::iterator it = scene_triangles.begin(); it != scene_triangles.end(); it++){
+			//cout << typeid(*it).name() << endl;
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
 				dist = tmp;
 				object = (*it);
 			}
 		}
-		for (vector<DrawObject*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
+		/*for (vector<DrawObject*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
 				dist = tmp;
 				object = (*it);
 			}
-		}
+		}*/
 		return object;
 	}
 	DrawObject* FindShadowIntersection(Ray &ray, float & dist, DrawObject* obj) {
@@ -218,11 +221,12 @@ public:
 			Ray shadowRay(hit.getX(), hit.getY(), hit.getZ(), (*it)->GetPosition()->getX(), (*it)->GetPosition()->getY(), (*it)->GetPosition()->getZ());
 			
 			kd_scene->FindKDIntersection(shadowRay, cmp);
+			//scene->FindShadowIntersection(shadowRay, cmp, object);
 			light_dst = sqrt(dir_to_light.getX()*dir_to_light.getX() + dir_to_light.getY()*dir_to_light.getY() + dir_to_light.getZ()*dir_to_light.getZ());
 
 			// something's blocking the light
-			if (cmp < (light_dst - 0.01f) && cmp > 0.01f)
-				continue;
+			/*if (cmp < (light_dst - 0.01f) && cmp > 0.01f)
+				continue;*/
 
 			float ppower = obj_material->getShine();
 			dir_to_light.normalizeThis();
@@ -235,7 +239,7 @@ public:
 		}
 
 		// for DPG there is no need for mirror rays
-		//return color;
+		return color;
 
 		if (level > 8) return color;
 
@@ -1007,7 +1011,7 @@ void sglEnd(void) {
 					setPixelHorizontalLine(
 						border_positions[i].first, border_positions[i + 1].first,
 						current_y,
-						border_positions[i].second, border_positions[i + 1].second);
+						int(border_positions[i].second), int(border_positions[i + 1].second));
 				}
 			}
 			// - draw the border line => no break
@@ -1102,47 +1106,47 @@ void sglCircle(float x, float y, float z, float radius) {
 	if (!TransformationStack::scaleActualized)
 		setScale();
 	radius *= scale;
-	radius = (int)radius;
+	radius = (float)(int)radius;
 
 	if (fill_method == SGL_POINT) {
 		SetPoint(x, y, z);
 		return;
 	}
 
-	int x_0 = x;
-	int y_0 = y;
+	int x_0 = int(x);
+	int y_0 = int(y);
 
 	float dvex = 3;
 	float dvey = radius + radius - 2;
 	float p = 1 - radius;
 
 	x = 0;
-	y = (int)radius;
+	y = (float)(int)radius;
 	while (x <= y) {
 		// draw in 8 directions
 		if (fill_method == SGL_FILL) {
 			// fill area
-			setPixelHorizontalLine(x_0, x_0 + x, y_0 + y, z, z);
-			setPixelHorizontalLine(x_0, x_0 + x, y_0 - y, z, z);
-			setPixelHorizontalLine(x_0 - x, x_0, y_0 + y, z, z);
-			setPixelHorizontalLine(x_0 - x, x_0, y_0 - y, z, z);
+			setPixelHorizontalLine(x_0, x_0 + int(x), y_0 + int(y), z, z);
+			setPixelHorizontalLine(x_0, x_0 + int(x), y_0 - int(y), z, z);
+			setPixelHorizontalLine(x_0 - int(x), x_0, y_0 + int(y), z, z);
+			setPixelHorizontalLine(x_0 - int(x), x_0, y_0 - int(y), z, z);
 
-			setPixelHorizontalLine(x_0, x_0 + y, y_0 + x, z, z);
-			setPixelHorizontalLine(x_0, x_0 + y, y_0 - x, z, z);
-			setPixelHorizontalLine(x_0 - y, x_0, y_0 + x, z, z);
-			setPixelHorizontalLine(x_0 - y, x_0, y_0 - x, z, z);
+			setPixelHorizontalLine(x_0, x_0 + int(y), y_0 + int(x), z, z);
+			setPixelHorizontalLine(x_0, x_0 + int(y), y_0 - int(x), z, z);
+			setPixelHorizontalLine(x_0 - int(y), x_0, y_0 + int(x), z, z);
+			setPixelHorizontalLine(x_0 - int(y), x_0, y_0 - int(x), z, z);
 		}
 		else {
 			// borders
-			setPixel(x_0 + x, y_0 + y, z);
-			setPixel(x_0 + x, y_0 - y, z);
-			setPixel(x_0 - x, y_0 + y, z);
-			setPixel(x_0 - x, y_0 - y, z);
+			setPixel(x_0 + int(x), y_0 + int(y), z);
+			setPixel(x_0 + int(x), y_0 - int(y), z);
+			setPixel(x_0 - int(x), y_0 + int(y), z);
+			setPixel(x_0 - int(x), y_0 - int(y), z);
 
-			setPixel(x_0 + y, y_0 + x, z);
-			setPixel(x_0 + y, y_0 - x, z);
-			setPixel(x_0 - y, y_0 + x, z);
-			setPixel(x_0 - y, y_0 - x, z);
+			setPixel(x_0 + int(y), y_0 + int(x), z);
+			setPixel(x_0 + int(y), y_0 - int(x), z);
+			setPixel(x_0 - int(y), y_0 + int(x), z);
+			setPixel(x_0 - int(y), y_0 - int(x), z);
 		}
 
 		if (p >= 0) {
@@ -1528,13 +1532,13 @@ void sglViewport(int x, int y, int width, int height) {
 
 	for (size_t i = 0; i < 16; i++)
 		viewPortTransformation[i] = 0;
-	viewPortTransformation[0] = width / 2;
-	viewPortTransformation[5] = height / 2;
-	viewPortTransformation[10] = 1; // depth / 2;
-	viewPortTransformation[12] = x + width / 2;
-	viewPortTransformation[13] = y + height / 2;
-	viewPortTransformation[14] = 0; // z + depth / 2;
-	viewPortTransformation[15] = 1;
+	viewPortTransformation[0] = width / 2.0f;
+	viewPortTransformation[5] = height / 2.0f;
+	viewPortTransformation[10] = 1.0f; // depth / 2;
+	viewPortTransformation[12] = x + width / 2.0f;
+	viewPortTransformation[13] = y + height / 2.0f;
+	viewPortTransformation[14] = 0.0f; // z + depth / 2;
+	viewPortTransformation[15] = 1.0f;
 
 	TransformationStack::scaleActualized = false;
 	setErrCode(SGL_NO_ERROR);
@@ -1700,9 +1704,9 @@ void sglPointLight(const float x,
 
 void trace() {
 	int x = 0, y = 0;
-	int z = 0;
+	float z = 0;
 
-	setPixel(x, y, z);
+	setPixel(int(x), int(y), z);
 
 }
 
@@ -1714,6 +1718,7 @@ void sglBuildKdTree() {
 
 void sglRayTraceScene() {
 	DrawObject* draw_obj;
+	//DrawObject *jedna, *druhy;
 
 	//kd_scene->printOutTree();
 
@@ -1765,8 +1770,18 @@ void sglRayTraceScene() {
 				setPixel(x, y, 1);
 				continue;
 			} else*/ {
+			
+			/*if (jedna || druhy) {
+				cout << "--------" << endl;
+				cout << r.direction->getX() << "-" << r.direction->getY() << "-" << r.direction->getZ() << endl;
+				cout << "Normal: " << jedna << endl;
+				cout << "kd: " << druhy << endl;
+			}*/
+
 			//draw_obj = scene->FindIntersection(r, dist);
-			draw_obj = kd_scene->FindKDIntersection(r, dist);
+			 draw_obj = kd_scene->FindKDIntersection(r, dist);
+
+			//if (draw_obj) cout << draw_obj << endl;
 			}
 
 			if (draw_obj) {
@@ -1774,7 +1789,7 @@ void sglRayTraceScene() {
 				draw_r = color.x; 
 				draw_g = color.y;
 				draw_b = color.z;
-				setPixel(x, y, 1);
+				setPixel(int(x), int(y), 1);
 			}
 			else {
 				if (env_texels) {
@@ -1782,7 +1797,7 @@ void sglRayTraceScene() {
 					draw_r = color.x;
 					draw_g = color.y;
 					draw_b = color.z;
-					setPixel(x, y, 1);
+					setPixel(int(x), int(y), 1);
 				}
 			}
 		}
