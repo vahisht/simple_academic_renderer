@@ -3,3 +3,4 @@ renderer.VC.VC.opendb
 Release/*
 Debug/*
 x64/*
+.vs/*

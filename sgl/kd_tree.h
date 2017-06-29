@@ -2,6 +2,7 @@
 // kd_tree.h
 // Implementation of KD-Tree structure with O(N log N) construction
 // Based on "On building fast KD-trees for ray tracing, and on doing that in O(N log N)" by Wald and Havran
+// Also based on implementation of slower, O(N log^2 N) algorithm by Miguel Granados and Richard Socher (University of Saarland)
 // Date:  2017/04
 // Author: Michal Kuèera, CTU Prague
 //---------------------------------------------------------------------------
@@ -10,6 +11,9 @@
 
 
 #include "primitives.h"
+
+#include <cassert>
+#include <limits>
 
 // ==========================================================================
 //  O(N log N) construction of kd-tree. Semester project for DPG
@@ -41,6 +45,16 @@ public:
 
 	~splitPlane() {
 		//delete this->position; 
+	}
+
+	bool equal( const splitPlane* prev ) {
+		if (prev == NULL) return false;
+
+		if ((this->dimension == prev->dimension ) &&
+			(this->position == prev->position)
+			) return true;
+
+		return false;
 	}
 };
 
@@ -984,4 +998,254 @@ public:
 };
 
 
+class SAHKdtree
+{
 	
+	// traversal cost
+	float KT;
+
+	// triangle intersection cost
+	float KI;
+
+	//
+	kdNode* root;
+
+	//
+	Voxel* bbox;
+
+	// surface area of a voxel V
+	inline float SA(const Voxel* V) const {
+		return 2 * V->dX()*V->dY() + 2 * V->dX()*V->dZ() + 2 * V->dY()*V->dZ();
+	}
+
+	// probability of hitting the subvoxel Vsub given that the voxel V was hit
+	inline float P_Vsub_given_V(const Voxel* Vsub, const Voxel* V) const {
+		float SA_Vsub = SA(Vsub);
+		float SA_V = SA(V);
+		return(SA_Vsub / SA_V);
+	}
+
+	// bias for the cost function s.t. it is reduced if NL or NR becomes zero
+	inline float lambda(int NL, int NR, float PL, float PR) const {
+		if ((NL == 0 || NR == 0) &&
+			!(PL == 1 || PR == 1) // NOT IN PAPER
+			)
+			return 0.8f;
+		return 1.0f;
+	}
+
+	// cost C of a complete tree approximated using the cost CV of subdividing the voxel V with a plane p
+	inline float C(float PL, float PR, int NL, int NR) const {
+		// cerr << "C: PL=" << PL << ", PR=" << PR << ", NL=" << NL << ", NR=" << NR << ", C=" << (lambda(NL, NR) * (KT + KI * (PL * NL + PR * NR))) << endl;
+		return(lambda(NL, NR, PL, PR) * (KT + KI * (PL * NL + PR * NR)));
+	}
+
+	// split a voxel V using a plane p
+	void splitBox(Voxel* V, const splitPlane* p, Voxel* VL, Voxel* VR) const {
+		VL = new Voxel(V);
+		VR = new Voxel(V);
+		VL->setMax(p->pk, p->pe);
+		VR->setMin(p->pk, p->pe);
+		assert(V->contains(VL));
+		assert(V->contains(VR));
+	}
+
+	typedef enum { LEFT = -1, RIGHT = 1, UNKNOWN = 0 } PlaneSide;
+
+	// SAH heuristic for computing the cost of splitting a voxel V using a plane p
+	void SAH(const splitPlane* p, Voxel* V, int NL, int NR, int NP, float& CP, PlaneSide& pside) const {
+		CP = std::numeric_limits<float>::infinity();
+		Voxel *VL, *VR;
+		splitBox(V, p, VL, VR);
+		float PL, PR;
+		PL = P_Vsub_given_V(VL, V);
+		PR = P_Vsub_given_V(VR, V);
+		if (PL == 0 || PR == 0) // NOT IN PAPER
+			return;
+		if (V->d(p->pk) == 0) // NOT IN PAPER
+			return;
+		float CPL, CPR;
+		CPL = C(PL, PR, NL + NP, NR);
+		CPR = C(PL, PR, NL, NP + NR);
+		if (CPL < CPR) {
+			CP = CPL;
+			pside = LEFT;
+		}
+		else {
+			CP = CPR;
+			pside = RIGHT;
+		}
+		/*
+		cerr << "SHA:"
+		<< "  NL=" << NL << ", NP=" << NP << ", NR=" << NR << ", SAL=" << SA(VL)
+		<< "  VL.min=" << VL.min << ", VL.max=" << VL.max << ", SAL=" << SA(VL)
+		<< ", VR.min=" << VR.min << ", VR.max=" << VR.max << ", SAR=" << SA(VR)
+		<< ", V.min=" << V.min << ", V.max=" << V.max << ", SA=" << SA(V) << endl;
+		cerr << "SHA: (PL,PR)=(" << PL << "," << PR << "), (CPL, CPR)=(" << CPL << "," << CPR << ")" << endl;
+		*/
+	}
+
+	// criterion for stopping subdividing a tree node
+	inline bool terminate(int N, float minCv) const {
+		// cerr << "terminate: minCv=" << minCv << ", KI*N=" << KI*N << endl;
+		return(minCv > KI*N);
+	}
+
+	struct Event {
+		typedef enum { endingOnPlane = 0, lyingOnPlane = 1, startingOnPlane = 2 } EventType;
+		Triangle* et;	// triangle
+		splitPlane *p;
+		EventType type;
+		Event(Triangle* et0, int k, float ee0, EventType type0) :
+			et(et0), type(type0) {
+			assert(type == endingOnPlane || type == lyingOnPlane || type == startingOnPlane);
+			p = new splitPlane(k, ee0);
+		}
+		inline bool operator<(const Event& e) const {
+			return((p.pe < e.p->pe) || (p->pe == e.p->pe && type < e.type));
+		}
+
+
+	};
+
+	// get primitives's clipped bounding box
+	Voxel* clipTriangleToBox(Triangle* t, const Voxel *V) const {
+		Voxel *b = new Voxel(t);
+		for (int k = 0; k<3; k++) {
+			if (V->min[k] > b->min[k])
+				b->min[k] = V->min[k];
+			if (V->max[k] < b->max[k])
+				b->max[k] = V->max[k];
+		}
+		assert(V.contains(b));
+		return b;
+	}
+
+	// best spliting plane using SAH heuristic
+	void findPlane(const vector<Triangle *> T, Voxel* V, int depth,
+		splitPlane* p_est, float& C_est, PlaneSide& pside_est) const {
+		// static int count = 0;
+		C_est = std::numeric_limits<float>::infinity();
+		for (int k = 0; k<3; ++k) {
+			vector<Event> events;
+			events.reserve(T.size() * 2);
+			for (vector<Triangle*>::const_iterator pit = T.begin(); pit != T.end(); pit++) {
+				Triangle* t = *pit;
+				Voxel *B = clipTriangleToBox(t, V);
+				if (B->isPlanar()) {
+					events.push_back(Event(t, k, B->min[k], Event::lyingOnPlane));
+				}
+				else {
+					events.push_back(Event(t, k, B->min[k], Event::startingOnPlane));
+					events.push_back(Event(t, k, B->max[k], Event::endingOnPlane));
+				}
+			}
+			sort(events.begin(), events.end());
+			int NL = 0, NP = 0, NR = T.size();
+			for (vector<Event>::size_type Ei = 0; Ei < events.size(); ++Ei) {
+				splitPlane *p = events[Ei].p;
+				int pLyingOnPlane = 0, pStartingOnPlane = 0, pEndingOnPlane = 0;
+				while (Ei < events.size() && events[Ei].p->pe == p->pe && events[Ei].type == Event::endingOnPlane) {
+					++pEndingOnPlane;
+					Ei++;
+				}
+				while (Ei < events.size() && events[Ei].p->pe == p->pe && events[Ei].type == Event::lyingOnPlane) {
+					++pLyingOnPlane;
+					Ei++;
+				}
+				while (Ei < events.size() && events[Ei].p->pe == p->pe && events[Ei].type == Event::startingOnPlane) {
+					++pStartingOnPlane;
+					Ei++;
+				}
+				NP = pLyingOnPlane;
+				NR -= pLyingOnPlane;
+				NR -= pEndingOnPlane;
+				float C;
+				PlaneSide pside = UNKNOWN;
+				SAH(p, V, NL, NR, NP, C, pside);
+				//cerr << "findPlane(" << count++ << "): plane.pk=" << p.pk << ", plane.pe=" << p.pe << ", NL=" << NL << ", NP=" << NP << ", NR=" << NR << ", cost=" << C << endl;
+				if (C < C_est) {
+					C_est = C;
+					p_est = p;
+					pside_est = pside;
+				}
+				NL += pStartingOnPlane;
+				NL += pLyingOnPlane;
+				NP = 0;
+			}
+		}
+		//cerr << "findPlane(" << count++ << "): p_est.pk=" << p_est.pk << ", p_est.pe=" << p_est.pe << " (" << (p_est.pe - V.min[p_est.pk]) / V.d(p_est.pk) << ", " << (V.max[p_est.pk] - p_est.pe) / V.d(p_est.pk) << ")"
+		//	<< ", pside=" << pside_est <<", C_est=" << C_est << endl;
+
+	}
+
+	// sort triangles into left and right voxels
+	void splitTrianglesIntoVoxels(const vector<Triangle*> T, const splitPlane* p, const PlaneSide& pside, vector<Triangle*> TL, vector<Triangle*> TR) const {
+		for (vector<Triangle*>::const_iterator pit = T.begin(); pit != T.end(); pit++) {
+			Triangle* t = *pit;
+			Voxel *tbox = new Voxel(t);
+			if (tbox->min[p->pk] == p->pe && tbox->max[p->pk] == p->pe) {
+				if (pside == LEFT)
+					TL.push_back(t);
+				else if (pside == RIGHT)
+					TR.push_back(t);
+				else
+					assert(false); // wrong pside
+			}
+			else {
+				if (tbox->min[p->pk] < p->pe)
+					TL.push_back(t);
+				if (tbox->max[p->pk] > p->pe)
+					TR.push_back(t);
+			}
+		}
+		//cerr << "splitTrianglesIntoVoxels: NL=" << TL.size() << ", NR=" << TR.size()
+		//	<< " (" << TL.size()/(float)T.size() << ", " << TR.size()/(float)T.size() << ")" << endl;
+	}
+
+	int maxdepth; // DEBUG ONLY
+	int nnodes; // DEBUG ONLY
+
+	kdNode *RecBuild(vector<Triangle *> T, Voxel *V, int depth, const splitPlane* prev_p)
+	{
+		assert(depth < 100); // just as a protection for when the stopping criterion fails
+							 //cerr << endl << "Recbuild: |T|=" << T.size() << ", Vmin=" << V.min << ", Vmax=" << V.max << ", depth=" << depth << endl;
+
+		++nnodes; // DEBUG ONLY
+		if (depth > maxdepth) maxdepth = depth; // DEBUG ONLY
+
+		splitPlane* p = NULL;
+		float Cp;
+		PlaneSide pside;
+		findPlane(T, V, depth, p, Cp, pside);
+		if (terminate(T.size(), Cp)
+			|| p->equal(prev_p) ) // NOT IN PAPER
+		{
+			//cerr << "Recbuild: new leaf node" << endl;
+			return new kdNode(T, V);
+		}
+		Voxel *VL, *VR;
+		splitBox(V, p, VL, VR); // TODO: avoid doing this step twice
+		vector<Triangle *> TL, TR;
+		splitTrianglesIntoVoxels(T, p, pside, TL, TR);
+		return new kdNode(p, V, RecBuild(TL, VL, depth + 1, p), RecBuild(TR, VR, depth + 1, p));
+	}
+
+public:
+	SAHKdtree() {}
+
+	SAHKdtree(Voxel* topBox, vector<Triangle *> primitives)
+	{
+		KT = 1.0;
+		KI = 1.5;
+		this->bbox = topBox;
+		cerr << "SAHKdtree: KT=" << KT << ", KI=" << KI << endl;
+		maxdepth = 0;
+		nnodes = 0;
+		//clock_t t_before = clock();
+		this->root = RecBuild(primitives, topBox, 0, NULL);
+		//clock_t t_after = clock();
+		/*cerr << "SAHKdtree: nnodes=" << nnodes << ", maxdepth=" << maxdepth << endl;
+		cerr << "SAHKdtree: construction time=" << (t_after - t_before) / (float)CLOCKS_PER_SEC << "s" << endl;*/
+	}
+};
