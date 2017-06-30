@@ -149,6 +149,20 @@ public:
 			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_material));
 		}
 	}
+	void AddPrimitive(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, bool emissive) {
+		//cout << "Processing " << _normals->size() << endl;
+		if (emissive) {
+			scene_emissives.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+		}
+		else {
+			scene_primitives.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+			//cout << "--" << endl;
+			//cout << _normals->size() << endl;
+			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+			//scene_triangles[scene_triangles.size() - 1]->normals_print();
+		}
+	}
 	void AddLight(float x, float y, float z, float r, float g, float b) {
 		scene_lights.push_back(new PointLight(x, y, z, r, g, b));
 	}
@@ -176,7 +190,7 @@ public:
 		dist = numeric_limits<float>::max();		// tady by asi bylo lepší mít far plane scény spíše než nekonečno. Věci co jsou za far plane už totiž nekreslíme
 		float tmp;
 		DrawObject* closest = NULL;
-		for (vector<DrawObject*>::iterator it = scene_primitives.begin(); it != scene_primitives.end(); it++) {
+		for (vector<Triangle*>::iterator it = scene_triangles.begin(); it != scene_triangles.end(); it++) {
 			if ((*it) == obj) continue;
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
 				dist = tmp;
@@ -212,21 +226,24 @@ public:
 
 		Vertex hit = (*ray.origin) + ((*ray.direction) * distance);
 		Vector3f normal = object->getNormal(hit);
+		//return normal;
 		normal.Normalize();
 
 		// set light color addition and shadows
 		for (vector<PointLight*>::iterator it = scene_lights.begin(); it != scene_lights.end(); it++) {
+			//cout << (*it)->GetPosition()->getX() << " " << (*it)->GetPosition()->getY() << " " << (*it)->GetPosition()->getZ() << endl;
+
 			Vertex dir_to_light = *(*it)->GetPosition() - hit;
 
 			Ray shadowRay(hit.getX(), hit.getY(), hit.getZ(), (*it)->GetPosition()->getX(), (*it)->GetPosition()->getY(), (*it)->GetPosition()->getZ());
 			
-			kd_scene->FindKDIntersection(shadowRay, cmp);
-			//scene->FindShadowIntersection(shadowRay, cmp, object);
+			//kd_scene->FindKDIntersection(shadowRay, cmp, object);
+			scene->FindShadowIntersection(shadowRay, cmp, object);
 			light_dst = sqrt(dir_to_light.getX()*dir_to_light.getX() + dir_to_light.getY()*dir_to_light.getY() + dir_to_light.getZ()*dir_to_light.getZ());
 
 			// something's blocking the light
-			/*if (cmp < (light_dst - 0.01f) && cmp > 0.01f)
-				continue;*/
+			if (cmp < (light_dst - 0.001f) && cmp > 0.001f)
+				continue;
 
 			float ppower = obj_material->getShine();
 			dir_to_light.normalizeThis();
@@ -239,7 +256,7 @@ public:
 		}
 
 		// for DPG there is no need for mirror rays
-		return color;
+		//return color;
 
 		if (level > 8) return color;
 
@@ -872,11 +889,27 @@ void sglEnd(void) {
 		// add primitive to scene
 
 		vector < Vertex* >* vertex_buffer = active_context->GetVertexBuffer();
+		vector < Vertex* >* normal_buffer = active_context->GetNormalBuffer();
+
 		switch (drawing_object){
 		case SGL_POLYGON:
-			scene->AddPrimitive(SGL_POLYGON, vertex_buffer, used_material->Emissive());
+			//cout << "----" << endl;
+			if (active_context->normalsOK()) {
+				//cout << "Returned true" << endl;
+				//cout << "Given " << normal_buffer->size() << endl;
+				//cout << "A" << endl;
+				scene->AddPrimitive(SGL_POLYGON, vertex_buffer, normal_buffer, used_material->Emissive());
+			}
+			else {
+				//cout << "returned false" << endl;
+				//cout << "B" << endl;
+				scene->AddPrimitive(SGL_POLYGON, vertex_buffer, used_material->Emissive());
+			}
 			vertex_buffer = new vector < Vertex* >; // deletion of vertex buffer moved to the scene primitive
 			active_context->SetVertexBuffer(vertex_buffer);
+			normal_buffer = new vector < Vertex* >; // deletion of vertex buffer moved to the scene primitive
+			active_context->SetNormalBuffer(normal_buffer);
+			//cout << "____" << endl;
 			break;
 		default:
 			break;
@@ -1085,6 +1118,11 @@ void sglVertex4f(float x, float y, float z, float w) {
 void sglVertex3f(float x, float y, float z) {
 	if (!drawing || !active_context) return;
 	active_context->AddVertex(x, y, z, 1);
+}
+void sglVertex3f(float vx, float vy, float vz, float nx, float ny, float nz) {
+	if (!drawing || !active_context) return;
+	active_context->AddVertex(vx, vy, vz, 1);
+	active_context->AddNormal(nx, ny, nz, 1);
 }
 void sglVertex2f(float x, float y) {
 	/// Input of a vertex. Assumes z=0, w=1.
@@ -1778,8 +1816,8 @@ void sglRayTraceScene() {
 				cout << "kd: " << druhy << endl;
 			}*/
 
-			//draw_obj = scene->FindIntersection(r, dist);
-			 draw_obj = kd_scene->FindKDIntersection(r, dist);
+			 draw_obj = scene->FindIntersection(r, dist);
+			 //draw_obj = kd_scene->FindKDIntersection(r, dist);
 
 			//if (draw_obj) cout << draw_obj << endl;
 			}

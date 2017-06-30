@@ -134,7 +134,7 @@ void sglFinish(void);
   ERRORS:
    - SGL_OUT_OF_MEMORY ... not enough memory
    - SGL_OUT_OF_RESOURCES ... too many contexts 
-     (Implementation dependent. At least 32 must be provided, though.)
+	 (Implementation dependent. At least 32 must be provided, though.)
 */
 int sglCreateContext(int width, int height);
 
@@ -147,7 +147,7 @@ int sglCreateContext(int width, int height);
   @param id [in] Identified of the deleted drawing context.
 
   ERRORS:
-    - SGL_INVALID_VALUE ... invalid context id
+	- SGL_INVALID_VALUE ... invalid context id
 */
 void sglDestroyContext(int id);
 
@@ -156,21 +156,21 @@ void sglDestroyContext(int id);
   @param id [in] Identifier of the context to set.
 
   ERRORS:
-    - SGL_INVALID_VALUE ... invalid context id
+	- SGL_INVALID_VALUE ... invalid context id
 */
 void sglSetContext(int id);
 
 /// Return the identifier of the current drawing context.
 /**
   ERRORS:
-    - SGL_INVALID_OPERATION ... no context has been allocated
+	- SGL_INVALID_OPERATION ... no context has been allocated
 */
 int sglGetContext(void);
 
 /// Return the pointer to the color buffer of the current drawing context.
 /**
   ERRORS:
-    - none (0 returned if no context allocated. No error code set.)
+	- none (0 returned if no context allocated. No error code set.)
 */
 float *sglGetColorBufferPointer(void);
 
@@ -185,35 +185,35 @@ float *sglGetColorBufferPointer(void);
 /// Clear the buffer according to the specified bitmask
 /**
   @param what is a bitmask composed of the following bits:
-    - SGL_COLOR_BUFFER_BIT ... clear the color buffer (use the color specified by sglClearColor)
-    - SGL_DEPTH_BUFFER_BIT ... clear the depth buffer (use a very large positive value) 
+	- SGL_COLOR_BUFFER_BIT ... clear the color buffer (use the color specified by sglClearColor)
+	- SGL_DEPTH_BUFFER_BIT ... clear the depth buffer (use a very large positive value) 
 
   ERRORS:
-    - SGL_INVALID_VALUE 
-       Is generated if any bit other than the two defined bits is set in mask.
-    - SGL_INVALID_OPERATION
-       No context has been allocated yet or sglClear is called between a 
-       call to sglBegin and the corresponding call to sglEnd.
+	- SGL_INVALID_VALUE 
+	   Is generated if any bit other than the two defined bits is set in mask.
+	- SGL_INVALID_OPERATION
+	   No context has been allocated yet or sglClear is called between a 
+	   call to sglBegin and the corresponding call to sglEnd.
  */
 void sglClear(unsigned what);
 
 /// Start drawing a specified element given by the elementType parameter.
 /**
   ERRORS:
-    - SGL_INVALID_ENUM
-     is generated if mode is set to an unaccepted value.
-    - SGL_INVALID_OPERATION
-     is generated if sglEnd is called before the corresponding sglBegin is called,
-     or if sglBegin is called within a sglBegin/sglEnd sequence.
+	- SGL_INVALID_ENUM
+	 is generated if mode is set to an unaccepted value.
+	- SGL_INVALID_OPERATION
+	 is generated if sglEnd is called before the corresponding sglBegin is called,
+	 or if sglBegin is called within a sglBegin/sglEnd sequence.
  */
 void sglBegin(sglEElementType mode);
 
 /// Element completion.
 /**
   ERRORS:
-    - SGL_INVALID_OPERATION
-     is generated if sglEnd is called before the corresponding sglBegin is called,
-     or if sglBegin is called within a sglBegin/sglEnd sequence.
+	- SGL_INVALID_OPERATION
+	 is generated if sglEnd is called before the corresponding sglBegin is called,
+	 or if sglBegin is called within a sglBegin/sglEnd sequence.
  */
 void sglEnd(void);
 
@@ -231,6 +231,7 @@ void sglVertex4f(float x, float y, float z, float w);
  */
 void sglVertex3f(float x, float y, float z);
 
+void sglVertex3f(float vx, float vy, float vz, float nx, float ny, float nz);
 /// Input of a vertex. Assumes z=0, w=1.
 /**
   ERRORS:
@@ -262,10 +263,10 @@ void sglVertex2f(float x, float y);
 
   ERRORS: 
    - SGL_INVALID_VALUE 
-    Is generated if the radius not positive.
+	Is generated if the radius not positive.
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglCircle is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglCircle is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglCircle(float x, float y, float z, float radius);
 
@@ -293,10 +294,10 @@ void sglCircle(float x, float y, float z, float radius);
 
  ERRORS:
   - SGL_INVALID_VALUE 
-    Is generated if the a or b is negative.
+	Is generated if the a or b is negative.
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglEllipse is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglEllipse is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglEllipse(float x, float y, float z, float a, float b);
 
@@ -327,13 +328,13 @@ void sglArc(float x, float y, float z, float radius, float from, float to);
 /// Specifies which matrix stack is the target for subsequent matrix operations.
 /**
   @param mode
-    Two values are accepted: SGL_MODELVIEW and SGL_PROJECTION.
+	Two values are accepted: SGL_MODELVIEW and SGL_PROJECTION.
 
   ERRORS:
    - SGL_INVALID_ENUM is generated if mode is not an accepted value.
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglMatrixMode is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglMatrixMode is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglMatrixMode( sglEMatrixMode mode );
 
@@ -341,11 +342,11 @@ void sglMatrixMode( sglEMatrixMode mode );
 /**
   ERRORS:
    - SGL_STACK_OVERFLOW 
-    is generated if sglPushMatrix is called while the current
-    matrix stack is full.
+	is generated if sglPushMatrix is called while the current
+	matrix stack is full.
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglPushMatrix is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglPushMatrix is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglPushMatrix(void);
 
@@ -353,11 +354,11 @@ void sglPushMatrix(void);
 /**
   ERRORS:
    - SGL_STACK_UNDERFLOW
-    is generated if sglPopMatrix is called while the current matrix stack
-    contains only a single matrix.
+	is generated if sglPopMatrix is called while the current matrix stack
+	contains only a single matrix.
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglPopMatrix is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglPopMatrix is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglPopMatrix(void);
 
@@ -365,8 +366,8 @@ void sglPopMatrix(void);
 /**
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglLoadIdentity is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglLoadIdentity is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglLoadIdentity(void);
 
@@ -374,8 +375,8 @@ void sglLoadIdentity(void);
 /**
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglLoadMatrix is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglLoadMatrix is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglLoadMatrix(const float *matrix);
 
@@ -389,8 +390,8 @@ void sglLoadMatrix(const float *matrix);
 
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglMultMatrix is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglMultMatrix is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglMultMatrix(const float *matrix);
 
@@ -398,8 +399,8 @@ void sglMultMatrix(const float *matrix);
 /**
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglTranslate is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglTranslate is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglTranslate(float x, float y, float z);
 
@@ -407,8 +408,8 @@ void sglTranslate(float x, float y, float z);
 /**
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglScale is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglScale is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglScale(float scalex, float scaley, float scalez);
 
@@ -417,8 +418,8 @@ void sglScale(float scalex, float scaley, float scalez);
 /**
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglRotate2D is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglRotate2D is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglRotate2D(float angle, float centerx, float centery);
 
@@ -427,37 +428,37 @@ void sglRotate2D(float angle, float centerx, float centery);
 /**
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglRotateY is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglRotateY is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglRotateY(float angle);
 
 /// Multiply the current matrix by an orthographic matrix.
 /**
   @param left, right
-    Specify the coordinates for the left and right vertical clipping planes.
+	Specify the coordinates for the left and right vertical clipping planes.
   @param bottom, top
-    Specify the coordinates for the bottom and top horizontal clipping planes.
+	Specify the coordinates for the bottom and top horizontal clipping planes.
   @param near, far
-    Specify the distances to the nearer and farther depth clipping planes.
-    These distances are negative if the plane is to be behind the viewer. 
+	Specify the distances to the nearer and farther depth clipping planes.
+	These distances are negative if the plane is to be behind the viewer. 
 
   See the OpenGL reference manual (the blue book) for the exact form of the
   orthographic matrix.
 
   ERRORS:
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglOrtho is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglOrtho is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglOrtho(float left, float right, float bottom, float top, float near, float far);
 
 /// Multiply the current matrix by a perspective matrix
 /**
   @param left, right
-    Specify the coordinates for the left and right vertical clipping planes.
+	Specify the coordinates for the left and right vertical clipping planes.
   @param bottom, top
-    Specify the coordinates for the bottom and top horizontal clipping planes.
+	Specify the coordinates for the bottom and top horizontal clipping planes.
   @param near, far
    Specify the distances to the near and far depth clipping planes. 
    Both distances must be positive. 
@@ -488,10 +489,10 @@ void sglFrustum(float left, float right, float bottom, float top, float near, fl
 
   ERRORS:
    - SGL_INVALID_VALUE 
-    is generated if either width or height is negative.
+	is generated if either width or height is negative.
    - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglViewport is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglViewport is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglViewport(int x, int y, int width, int height);
 
@@ -502,9 +503,9 @@ void sglViewport(int x, int y, int width, int height);
 /// Set the color for clearing the color buffer. Aplpha is ignored.
 /**
   ERRORS:
-    - SGL_INVALID_OPERATION 
-     No context has been allocated yet or sglClearColor is called between a 
-     call to sglBegin() and the corresponding call to sglEnd().
+	- SGL_INVALID_OPERATION 
+	 No context has been allocated yet or sglClearColor is called between a 
+	 call to sglBegin() and the corresponding call to sglEnd().
 */
 void sglClearColor (float r, float g, float b, float alpha);
 
@@ -519,19 +520,19 @@ void sglColor3f(float r, float g, float b);
 /**
  @param mode
    Three values are accepted:
-    - SGL_POINT
-     Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
-    - SGL_LINE
-     Draw only borders of graphics elements (lines)
-    - SGL_FILL
-     Draw filled elements, default.
+	- SGL_POINT
+	 Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
+	- SGL_LINE
+	 Draw only borders of graphics elements (lines)
+	- SGL_FILL
+	 Draw filled elements, default.
 
  ERRORS: 
   - SGL_INVALID_ENUM 
    is generated if mode is not an accepted value.
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglAreaMode is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglAreaMode is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglAreaMode(sglEAreaMode mode);
 
@@ -543,8 +544,8 @@ void sglAreaMode(sglEAreaMode mode);
   - SGL_INVALID_VALUE 
    is generated if size is less than or equal to zero.
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglPointSize is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglPointSize is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
 */
 void sglPointSize(float size);
 
@@ -558,8 +559,8 @@ void sglPointSize(float size);
   - SGL_INVALID_ENUM 
    is generated if cap is not one of the values listed above.
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglEnable is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglEnable is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglEnable(sglEEnableFlags cap);
 
@@ -572,8 +573,8 @@ void sglEnable(sglEEnableFlags cap);
   - SGL_INVALID_ENUM 
    is generated if cap is not one of the values listed above.
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglDisable is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglDisable is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglDisable(sglEEnableFlags cap);
 
@@ -587,8 +588,8 @@ void sglDisable(sglEEnableFlags cap);
 
  ERRORS: 
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglBeginScene is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglBeginScene is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglBeginScene();
 
@@ -596,8 +597,8 @@ void sglBeginScene();
 /**
  ERRORS: 
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglEndScene is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglEndScene is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglEndScene();
 
@@ -609,8 +610,8 @@ void sglEndScene();
 
  ERRORS: 
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglSphere is called between a 
-    call to sglBegin and the corresponding call to sglEnd or sglSphere is
+	No context has been allocated yet or sglSphere is called between a 
+	call to sglBegin and the corresponding call to sglEnd or sglSphere is
 	called out side sglBeginScene/sglEndScene pair.
  */
 void sglSphere(const float x,
@@ -633,7 +634,7 @@ void sglSphere(const float x,
    @param ks [in] specular coef.
    @param shine [in] Phong cosine power for highlights.
    @param T [in] transmittance (fraction of contribution of the
-    transmitting ray).
+	transmitting ray).
    @param ior [in] index of refraction.
 
    Usually, 0 <= Kd <= 1 and 0 <= Ks <= 1, though it is
@@ -643,8 +644,8 @@ void sglSphere(const float x,
 	
   ERRORS:
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglMaterial is called between a 
-    call to sglBegin and the corresponding call to sglEnd.
+	No context has been allocated yet or sglMaterial is called between a 
+	call to sglBegin and the corresponding call to sglEnd.
  */
 void sglMaterial(const float r,
 				 const float g,
@@ -670,8 +671,8 @@ Adds a point light to the scene.
 
   ERRORS:
   - SGL_INVALID_OPERATION
-    No context has been allocated yet or sglPointLight not called between a 
-    call to sglBeginScene and the corresponding call to sglEndScene.
+	No context has been allocated yet or sglPointLight not called between a 
+	call to sglBeginScene and the corresponding call to sglEndScene.
  */
 void sglPointLight(const float x,
 				   const float y,
@@ -720,8 +721,8 @@ d is 1/(c0 + c1*d + c2*d^2).
 
   ERRORS:
   - SGL_INVALID_OPERATION
-     No context has been allocated yet or sglEmissiveMaterial is called between a 
-     call to sglBegin() and the corresponding call to sglEnd().
+	 No context has been allocated yet or sglEmissiveMaterial is called between a 
+	 call to sglBegin() and the corresponding call to sglEnd().
  */
 void sglEmissiveMaterial(
 						 const float r,
@@ -742,9 +743,9 @@ void sglEmissiveMaterial(
    @param texels [in] 3*width*height RGB tripplets corresponding to texels (in floats).*/
 /**
   ERRORS:
-    - SGL_INVALID_OPERATION 
-     No context has been allocated yet or sglEnvironmentMap is called between a 
-     call to sglBegin() and the corresponding call to sglEnd().
+	- SGL_INVALID_OPERATION 
+	 No context has been allocated yet or sglEnvironmentMap is called between a 
+	 call to sglBegin() and the corresponding call to sglEnd().
 */
 void sglEnvironmentMap(const int width,
 					   const int height,

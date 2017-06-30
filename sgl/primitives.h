@@ -51,6 +51,7 @@ enum sglEElementType {
 class Vertex
 {
 public:
+	Vertex() { x = 0; y = 0; z = 0; };
 	Vertex(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {};
 	float getX() { return x; }
 	float getY() { return y; }
@@ -225,6 +226,7 @@ public:
 		canvas = new float[3 * canvas_size];
 		z_buffer = new float[canvas_size];
 		vertex_buffer = new vector < Vertex* >;
+		normal_buffer = new vector < Vertex* >;
 
 		// init
 		float *index, *index_r, *index_g, *index_b;
@@ -249,6 +251,7 @@ public:
 		delete[] z_buffer;
 		ClearVertexBuffer();
 		delete vertex_buffer;
+		delete normal_buffer;
 	}
 	int GetContextID() { return id; }
 	int GetWidth() { return width; }
@@ -257,16 +260,31 @@ public:
 	float* GetColorBuffer() { return canvas; }
 	float* GetZBuffer() { return z_buffer; }
 	vector<Vertex*>* GetVertexBuffer() { return vertex_buffer; }
+	vector<Vertex*>* GetNormalBuffer() { return normal_buffer; }
 	void AddVertex(float _x, float _y, float _z = 0, float _w = 1) {
 		vertex_buffer->push_back(new Vertex(_x, _y, _z, _w));
+	}
+	void AddNormal(float _x, float _y, float _z = 0, float _w = 1) {
+		normal_buffer->push_back(new Vertex(_x, _y, _z, _w));
 	}
 	void ClearVertexBuffer() {
 		for (vector<Vertex*>::iterator it = vertex_buffer->begin(); it != vertex_buffer->end(); ++it)
 			delete (*it);
 		vertex_buffer->clear();
+		for (vector<Vertex*>::iterator it = normal_buffer->begin(); it != normal_buffer->end(); ++it)
+			delete (*it);
+		normal_buffer->clear();
 	}
 	void SetVertexBuffer(vector<Vertex*>* new_vertex_buffer) {
 		vertex_buffer = new_vertex_buffer;
+	}
+	void SetNormalBuffer(vector<Vertex*>* new_normal_buffer) {
+		normal_buffer = new_normal_buffer;
+	}
+	bool normalsOK() {
+		//cout << this->normal_buffer->size() << " vs. " << this->vertex_buffer->size() << endl;
+		if (this->normal_buffer->size() == this->vertex_buffer->size()) return true;
+		return false;
 	}
 
 private:
@@ -276,6 +294,7 @@ private:
 	float* canvas; //[RGB] x width x height
 	float* z_buffer;
 	vector<Vertex*>* vertex_buffer;
+	vector<Vertex*>* normal_buffer;
 };
 
 class TransformationStack {
@@ -449,6 +468,28 @@ public:
 		Vertex u = *vertices->at(1) - *vertices->at(0);
 		Vertex v = *vertices->at(2) - *vertices->at(0);
 
+		//cout << "B" << endl;
+
+		this->normals = NULL;
+
+		cout << "NULL" << endl;
+
+		this->normal = new Vector3f(
+			(u.getY()*v.getZ() - u.getZ()*v.getY()),
+			(u.getZ()*v.getX() - u.getX()*v.getZ()),
+			(u.getX()*v.getY() - u.getY()*v.getX()));
+		this->normal->Normalize();
+	}
+	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, MaterialBase* _used_material) :DrawObject("Triangle", _used_material), object_type(_object_type), vertices(_vertices), normals(_normals) {
+		Vertex u = *vertices->at(1) - *vertices->at(0);
+		Vertex v = *vertices->at(2) - *vertices->at(0);
+
+		/*cout << "Got " << _normals->size() << endl;
+		cout << "Ended with " << this->normals->size() << endl;*/
+		//cout << "A" << endl;
+
+		//cout << this->normals->size() << endl;
+
 		this->normal = new Vector3f(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
 			(u.getZ()*v.getX() - u.getX()*v.getZ()),
@@ -459,7 +500,42 @@ public:
 		for (vector<Vertex*>::iterator it = vertices->begin(); it != vertices->end(); ++it)
 			delete *it;
 		delete vertices;
+		if (normals) delete normals;
 		delete normal;
+	}
+	void normals_print() {
+		cout << this->normals->size() << endl;
+	}
+	void print() {
+		cout << "(" << this->vertices->at(0)->getX() << "," << this->vertices->at(0)->getY() << "," << this->vertices->at(0)->getZ() << ") ";
+		cout << "(" << this->vertices->at(1)->getX() << "," << this->vertices->at(1)->getY() << "," << this->vertices->at(1)->getZ() << ") ";
+		cout << "(" << this->vertices->at(2)->getX() << "," << this->vertices->at(2)->getY() << "," << this->vertices->at(2)->getZ() << ")" << endl;
+	}
+	virtual Vector3f getNormal(Vertex hit) {
+		//cout << this->normals->size() << endl;
+		if (this->normals == NULL) return *this->normal;
+
+		//cout << "Normals available" << endl;
+		
+		Vertex v2_1, v2_3, v2_t;
+
+		double bary[3];
+		v2_1 = *this->vertices->at(0) - *this->vertices->at(1);
+		v2_3 = *this->vertices->at(2) - *this->vertices->at(1);
+		v2_t = hit - *this->vertices->at(1);
+
+		float d00 = Vertex::DotProduct(v2_1, v2_1);
+		float d01 = Vertex::DotProduct(v2_1, v2_3);
+		float d11 = Vertex::DotProduct(v2_3, v2_3);
+		float denom = d00 * d11 - d01 * d01;
+
+		float d20 = Vertex::DotProduct(v2_t, v2_1);
+		float d21 = Vertex::DotProduct(v2_t, v2_3);
+		bary[0] = (d11 * d20 - d01 * d21) / denom;
+		bary[1] = (d00 * d21 - d01 * d20) / denom;
+		bary[2] = 1.0f - bary[0] - bary[1];
+
+		return Vector3f(&(*this->normals->at(0) * bary[0] + *this->normals->at(1) * bary[2] + *this->normals->at(2) * bary[1]));
 	}
 	virtual bool FindIntersection(Ray &ray, float &tHit, bool debug = false) {
 
@@ -522,9 +598,6 @@ public:
 
 
 	}
-	virtual Vector3f getNormal(Vertex hit) {
-		return *this->normal;
-	}
 	Vertex randomSample() {
 		// uniform random point in triangle
 		float r1 = (double)rand() / (RAND_MAX);
@@ -561,5 +634,6 @@ private:
 	Vector3f* normal;
 	sglEElementType object_type;
 	vector<Vertex*>* vertices;
+	vector<Vertex*>* normals = NULL;
 };
 

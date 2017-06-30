@@ -370,11 +370,19 @@ RayTraceAssimpScene(const char *scenename)
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
 			aiFace *face = &mesh->mFaces[j];
 
+			//mesh->mN
+
 			sglBegin(SGL_POLYGON);
 
 			for (unsigned int k = 0; k < face->mNumIndices; k++) {
 				aiVector3D * vertex = &mesh->mVertices[face->mIndices[k]];
-				sglVertex3f(vertex->x, vertex->y, vertex->z);
+				if (&mesh->mNormals[face->mIndices[k]] != NULL) {
+					aiVector3D * normal = &mesh->mNormals[face->mIndices[k]];
+					sglVertex3f(vertex->x, vertex->y, vertex->z, normal->x, normal->y, normal->z);
+				}
+				else {
+					sglVertex3f(vertex->x, vertex->y, vertex->z);
+				}
 			}
 
 			sglEnd();
@@ -450,7 +458,7 @@ RayTraceAssimpScene(const char *scenename)
 		file.close();
 	}
 
-	sglPointLight(from_x, from_y + 2.0f, from_z - 1.0f, 1.0f, 1.0f, 1.0f);
+	sglPointLight(from_x, from_y + 0.5f, from_z - 1.0f, 1.0f, 1.0f, 1.0f);
 	sglEndScene();
 	/// END SCENE DEFINITION
 
@@ -675,8 +683,8 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
    //const char *sceneFile = "Data/plysak_normalized";		
-   const char *sceneFile = "Data/cornellbox-empty-rg";
-   //const char *sceneFile = "Data/cornellbox-sphere";
+   //const char *sceneFile = "Data/cornellbox-empty-rg";
+   const char *sceneFile = "Data/cornellbox-sphere";
 
    if (argc > 1) {
 	   //cout << argv[1] << endl;
