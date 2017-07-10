@@ -167,13 +167,13 @@ public:
 		scene_lights.push_back(new PointLight(x, y, z, r, g, b));
 	}
 
-	DrawObject* FindIntersection(Ray &ray, float & dist) {
+	DrawObject* FindIntersection(Ray &ray, float & dist, bool uncullBackFaces = false) {
 		DrawObject* object = NULL;
 		dist = numeric_limits<float>::max();		// tady by asi bylo lepší mít far plane scény spíše než nekonečno. Věci co jsou za far plane už totiž nekreslíme
 		float tmp;
 		for (vector<Triangle*>::iterator it = scene_triangles.begin(); it != scene_triangles.end(); it++){
 			//cout << typeid(*it).name() << endl;
-			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
+			if ((*it)->FindIntersection(ray, tmp, uncullBackFaces) && tmp < dist) {
 				dist = tmp;
 				object = (*it);
 			}
@@ -215,6 +215,7 @@ public:
 		}
 
 		Material* obj_material = (Material*)(object->GetMaterial()); // must not be emissive object
+		//return Vector3f(obj_material->getT(), obj_material->getT(), obj_material->getT());
 		DrawObject* recursion_object;
 		Vector3f mirroring;
 		Vector3f refracted;
@@ -231,20 +232,21 @@ public:
 
 		// set light color addition and shadows
 		for (vector<PointLight*>::iterator it = scene_lights.begin(); it != scene_lights.end(); it++) {
+
 			//cout << (*it)->GetPosition()->getX() << " " << (*it)->GetPosition()->getY() << " " << (*it)->GetPosition()->getZ() << endl;
 
 			Vertex dir_to_light = *(*it)->GetPosition() - hit;
 
 			Ray shadowRay(hit.getX(), hit.getY(), hit.getZ(), (*it)->GetPosition()->getX(), (*it)->GetPosition()->getY(), (*it)->GetPosition()->getZ());
 			
-			//kd_scene->FindKDIntersection(shadowRay, cmp, object);
-			scene->FindShadowIntersection(shadowRay, cmp, object);
+			kd_scene->FindKDIntersection(shadowRay, cmp, object);
+			//scene->FindShadowIntersection(shadowRay, cmp, object);
 			light_dst = sqrt(dir_to_light.getX()*dir_to_light.getX() + dir_to_light.getY()*dir_to_light.getY() + dir_to_light.getZ()*dir_to_light.getZ());
 
 			// something's blocking the light
 			if (cmp < (light_dst - 0.001f) && cmp > 0.001f)
 				continue;
-
+				
 			float ppower = obj_material->getShine();
 			dir_to_light.normalizeThis();
 
@@ -256,11 +258,12 @@ public:
 		}
 
 		// for DPG there is no need for mirror rays
-		//return color;
+		return color;
 
 		if (level > 8) return color;
 
 		//set reflected
+		
 		if (obj_material->GetSpecular().x > 0.0f) {
 			Vector3f reflected_dir = reflected(normal, *ray.direction);
 			Ray mirrorRay(hit.getX(), hit.getY(), hit.getZ(), reflected_dir.x + hit.getX(), reflected_dir.y + hit.getY(), reflected_dir.z + hit.getZ());
@@ -308,7 +311,7 @@ public:
 			}
 
 			Ray refractedRay(hit.getX(), hit.getY(), hit.getZ(), refracted_dir.x + hit.getX(), refracted_dir.y + hit.getY(), refracted_dir.z + hit.getZ());
-			recursion_object = FindIntersection(refractedRay, recurs_distance);
+			recursion_object = FindIntersection(refractedRay, recurs_distance, true);
 
 			if (recursion_object) {
 				refracted = Illuminate(recursion_object, refractedRay, recurs_distance, level + 1);
@@ -1816,8 +1819,8 @@ void sglRayTraceScene() {
 				cout << "kd: " << druhy << endl;
 			}*/
 
-			 draw_obj = scene->FindIntersection(r, dist);
-			 //draw_obj = kd_scene->FindKDIntersection(r, dist);
+			 //draw_obj = scene->FindIntersection(r, dist);
+			 draw_obj = kd_scene->FindKDIntersection(r, dist);
 
 			//if (draw_obj) cout << draw_obj << endl;
 			}

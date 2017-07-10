@@ -490,6 +490,11 @@ public:
 
 		//cout << this->normals->size() << endl;
 
+		for (int i = 0; i < normals->size(); i++)
+		{
+			normals->at(i)->normalizeThis();
+		}
+
 		this->normal = new Vector3f(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
 			(u.getZ()*v.getX() - u.getX()*v.getZ()),
@@ -513,6 +518,7 @@ public:
 	}
 	virtual Vector3f getNormal(Vertex hit) {
 		//cout << this->normals->size() << endl;
+		return *this->normal; // DEBUG
 		if (this->normals == NULL) return *this->normal;
 
 		//cout << "Normals available" << endl;
@@ -535,9 +541,9 @@ public:
 		bary[1] = (d00 * d21 - d01 * d20) / denom;
 		bary[2] = 1.0f - bary[0] - bary[1];
 
-		return Vector3f(&(*this->normals->at(0) * bary[0] + *this->normals->at(1) * bary[2] + *this->normals->at(2) * bary[1]));
+		return (Vector3f(&(*this->normals->at(0) * bary[0] + *this->normals->at(1) * bary[2] + *this->normals->at(2) * bary[1])));
 	}
-	virtual bool FindIntersection(Ray &ray, float &tHit, bool debug = false) {
+	virtual bool FindIntersection(Ray &ray, float &tHit, bool unCull = false) {
 
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
@@ -545,7 +551,7 @@ public:
 		//cout << ray.direction->getX() << "-" << ray.direction->getY() << "-" << ray.direction->getZ() << ", test:" << this << endl;
 
 		float angle = dotProduct(*normal, *ray.direction);
-		if (angle > 0)
+		if ( !unCull && angle > 0)
 			return false; // behind ray start
 
 						  // get triangle edge vectors and plane normal
@@ -565,7 +571,7 @@ public:
 
 		// get intersect point of ray with triangle plane
 		r = a / b;
-		if (r < 0.0)                    // ray goes away from triangle
+		if (r < 0.02)                    // ray goes away from triangle
 			return false;				// => no intersect
 										// for a segment, also test if (r > 1.0) => no intersect
 

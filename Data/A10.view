@@ -3,7 +3,7 @@ from 615.894 146.908 564.519
 dir -0.726047 -0.173158 -0.665486
 at 615.167 146.755 563.85
 up 0 1 0
-angle 79.2785
+angle 60
 hither  1
 resolution 512 512
 Viewpoint {

@@ -14,7 +14,7 @@
 #include "kd_tree.h"
 
 int config::K_T = 1;
-int config::K_I = 10;
+int config::K_I = 3;
 float config::epsilon = 0.00000001;
 bool config::debug = false;
 float config::voxel_size_cap = 0.01; // DEBUG pro VS omezení RAM

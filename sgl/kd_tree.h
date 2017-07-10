@@ -86,7 +86,7 @@ public:
 
 		this->position = Vector3f(T->at(0)->getVertices()->at(0));
 		this->dX = 0.0;
-		this->dY = 0.0;
+		this->dY = 0.0;	
 		this->dZ = 0.0;
 
 		for (int i = 1; i < T->size(); i++)

@@ -360,11 +360,27 @@ RayTraceAssimpScene(const char *scenename)
 		aiMaterial *mat = scene->mMaterials[mesh->mMaterialIndex];
 		aiColor3D color;
 		mat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+		aiString name;
+		mat->Get(AI_MATKEY_NAME, name);
+		//cout << name.C_Str() << endl;
+		//cout << ": " << color.r << " " << color.g << " " << color.b << endl;
 		aiColor3D specular;
 		mat->Get(AI_MATKEY_COLOR_SPECULAR, specular);
+		//cout << ": " << specular.r << " " << specular.g << " " << specular.b << endl;
+		aiColor3D transparent;
+		mat->Get(AI_MATKEY_COLOR_TRANSPARENT, transparent);
+		//cout << ": " << transparent.r << " " << transparent.g << " " << transparent.b << endl;
 		float shininess;
 		mat->Get(AI_MATKEY_SHININESS, shininess);
-		sglMaterial(color.r, color.g, color.b, 1.0f, (specular.r + specular.g + specular.b) / 3.0f, shininess, 0.0f, 0.0f);
+		float opacity;
+		mat->Get(AI_MATKEY_OPACITY, opacity);
+		//cout << "Op: " << opacity << endl;
+		float ior;
+		mat->Get(AI_MATKEY_REFRACTI, ior);
+		int light_model;
+		mat->Get(AI_MATKEY_SHADING_MODEL, light_model);
+		//cout << light_model << endl;
+		sglMaterial(color.r, color.g, color.b, 1.0f, (specular.r + specular.g + specular.b) / 3.0f, shininess, 1.0f - opacity, ior);
 
 
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
@@ -678,13 +694,13 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/Park";
    //const char *sceneFile = "Data/City";
    //const char *sceneFile = "Data/City2";					// tenhle model se tváøí divnì i v Blenderu
-   //const char *sceneFile = "Data/teapots";
+   const char *sceneFile = "Data/teapots";
    //const char *sceneFile = "Data/sibenik";				// pozor na umístìní svìtla
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
    //const char *sceneFile = "Data/plysak_normalized";		
    //const char *sceneFile = "Data/cornellbox-empty-rg";
-   const char *sceneFile = "Data/cornellbox-sphere";
+   //const char *sceneFile = "Data/cornellbox-sphere";
 
    if (argc > 1) {
 	   //cout << argv[1] << endl;
