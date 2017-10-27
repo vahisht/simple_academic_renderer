@@ -518,7 +518,7 @@ public:
 	}
 	virtual Vector3f getNormal(Vertex hit) {
 		//cout << this->normals->size() << endl;
-		return *this->normal; // DEBUG
+		//return *this->normal; // DEBUG
 		if (this->normals == NULL) return *this->normal;
 
 		//cout << "Normals available" << endl;

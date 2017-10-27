@@ -152,6 +152,7 @@ public:
 	void AddPrimitive(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, bool emissive) {
 		//cout << "Processing " << _normals->size() << endl;
 		if (emissive) {
+			//cout << "Emissive " << endl;
 			scene_emissives.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
 			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
 		}
@@ -258,7 +259,7 @@ public:
 		}
 
 		// for DPG there is no need for mirror rays
-		return color;
+		//return color;
 
 		if (level > 8) return color;
 
@@ -268,7 +269,8 @@ public:
 			Vector3f reflected_dir = reflected(normal, *ray.direction);
 			Ray mirrorRay(hit.getX(), hit.getY(), hit.getZ(), reflected_dir.x + hit.getX(), reflected_dir.y + hit.getY(), reflected_dir.z + hit.getZ());
 
-			recursion_object = FindShadowIntersection(mirrorRay, recurs_distance, object);
+			//recursion_object = FindShadowIntersection(mirrorRay, recurs_distance, object);
+			recursion_object = kd_scene->FindKDIntersection(mirrorRay, recurs_distance, object);
 
 			if (recursion_object) {
 				mirroring = Illuminate(recursion_object, mirrorRay, recurs_distance, level + 1);
@@ -285,6 +287,8 @@ public:
 			}
 		}
 
+		//return color;
+		
 		//set refracted
 		if (obj_material->getT() > 0.0f) {
 			float ior = obj_material->getIor();
@@ -311,7 +315,8 @@ public:
 			}
 
 			Ray refractedRay(hit.getX(), hit.getY(), hit.getZ(), refracted_dir.x + hit.getX(), refracted_dir.y + hit.getY(), refracted_dir.z + hit.getZ());
-			recursion_object = FindIntersection(refractedRay, recurs_distance, true);
+			//recursion_object = FindIntersection(refractedRay, recurs_distance, true);
+			recursion_object = kd_scene->FindKDIntersection(refractedRay, recurs_distance, object);
 
 			if (recursion_object) {
 				refracted = Illuminate(recursion_object, refractedRay, recurs_distance, level + 1);
@@ -328,6 +333,7 @@ public:
 		}
 
 		// indirect light
+		return color;
 		for (vector<DrawObject*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
 			MaterialEmissive* emis_material = (MaterialEmissive*)((*it)->GetMaterial());
 			Vector3f attentuationCons = emis_material->GetAttentuationCons();
