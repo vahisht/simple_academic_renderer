@@ -500,7 +500,6 @@ RayTraceAssimpScene(const char *scenename)
 		from_x, from_y, from_z, at_x, at_y, at_z, up_x, up_y, up_z );
 
 	sglLinearize();
-	_sleep(20000);
 	sglBuildKdTree();
 	cout << "KD-tree built" << endl;
 	// compute a ray traced image and store it in the color buffer
@@ -698,13 +697,13 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/Park";
    //const char *sceneFile = "Data/City";
    //const char *sceneFile = "Data/City2";					// tenhle model se tváøí divnì i v Blenderu
-   //const char *sceneFile = "Data/teapots";
+   const char *sceneFile = "Data/teapots";
    //const char *sceneFile = "Data/sibenik";				// pozor na umístìní svìtla
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
    //const char *sceneFile = "Data/plysak_normalized";		
    //const char *sceneFile = "Data/cornellbox-empty-rg";
-   const char *sceneFile = "Data/cornellbox-sphere";
+   //const char *sceneFile = "Data/cornellbox-sphere";
 
    if (argc > 1) {
 	   //cout << argv[1] << endl;

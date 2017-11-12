@@ -289,7 +289,7 @@ vector<triangleEvent*>* mergeEvents(vector<triangleEvent*>* E1, vector<triangleE
 /**
 * Recursive tree-building function
 */
-kdNode* RecBuild(vector<int>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane* pp, Triangle* triangles) {
+kdNode* RecBuild(vector<int>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane* pp, Triangle* triangles, int &count) {
 	planeSolution *best;
 	kdNode* result = new kdNode();
 	pair<Voxel*, Voxel*> splitted;
@@ -316,6 +316,8 @@ kdNode* RecBuild(vector<int>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane
 		delete E;
 		delete T;
 
+		//tree->push_back(result);
+		count++;
 		return result;
 	}
 
@@ -336,6 +338,7 @@ kdNode* RecBuild(vector<int>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane
 		delete V;
 		delete E;
 
+		count++;
 		return result;
 	}
 
@@ -605,17 +608,18 @@ kdNode* RecBuild(vector<int>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane
 	// Fill in the kdNode data
 	result->p = best->plane;
 	if (config::debug) cout << "Creating left child" << endl;
-	result->left = RecBuild(T_L, V1, E_L, result->p, triangles);
+	result->left = RecBuild(T_L, V1, E_L, result->p, triangles, count);
 	if (config::debug) cout << "Creating right child" << endl;
-	result->right = RecBuild(T_R, V2, E_R, result->p, triangles);
+	result->right = RecBuild(T_R, V2, E_R, result->p, triangles, count);
 
+	count++;
 	return result;
 }
 
 /**
 * Main function for building of a kd-tree using SAH cost function
 */
-kdNode* BuildKdTree(Triangle* T_src, int size) {
+kdNode* BuildKdTree(Triangle* T_src, int size, int &count) {
 	Voxel *V = new Voxel;
 	vector<triangleEvent*>* E = new vector<triangleEvent*>;
 	triangleEvent *event;
@@ -714,7 +718,7 @@ kdNode* BuildKdTree(Triangle* T_src, int size) {
 	V->setVoxelParameters(T_src, size);
 
 	// call the recursive function
-	return RecBuild(T, V, E, NULL, T_src);
+	return RecBuild(T, V, E, NULL, T_src, count);
 
 
 }

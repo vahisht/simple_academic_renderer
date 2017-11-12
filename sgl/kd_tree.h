@@ -42,6 +42,9 @@ public:
 	int dimension;
 	bool left;
 
+	splitPlane() {
+	}
+
 	splitPlane(float position, int dimension, bool left) {
 		this->position = position;
 		this->dimension = dimension;
@@ -734,6 +737,20 @@ struct kdNode {
 };
 
 
+struct kdNodeLinear {
+	int left; /*!< Left child */
+	int right; /*!< Right child*/
+	splitPlane p; /*!< Split plane */
+	Triangle* triangles = NULL;
+
+	kdNodeLinear() {
+
+	}
+
+	kdNodeLinear(int _left, int _right, splitPlane _p, Triangle* _triangles): left(_left), right(_right), p(_p), triangles(_triangles) {}
+};
+
+
 /**
 * Lambda function used biasing the cost function in favor of cutting away empty voxels
 */
@@ -795,7 +812,7 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 /**
 * Main function for building of a kd-tree using SAH cost function
 */
-kdNode* BuildKdTree(Triangle* T_src, int size);
+kdNode* BuildKdTree(Triangle* T_src, int size, int &count);
 
 struct  traversal_structure
 {
@@ -816,15 +833,26 @@ struct  traversal_structure
 
 class KD_Tree {
 private:
+	vector<kdNode> tree;
 	kdNode* root;
 	Voxel* V;
+	int node_count = 0;
 
 public:
+	kdNodeLinear* linearizeTree() {
+		kdNodeLinear* result = new kdNodeLinear[ this->node_count ];
+		cout << "Kd-tree node count: " << this->node_count << endl;
+
+
+
+		return result;
+	}
+
 	void doTheBuild(Triangle* T, int size) {
 		this->V = new Voxel();
 		this->V->setVoxelParameters(T, size);
 
-		root = BuildKdTree(T, size);
+		root = BuildKdTree(T, size, this->node_count);
 
 		cout << "Tree built" << endl;
 	}

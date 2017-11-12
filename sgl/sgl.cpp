@@ -1777,6 +1777,8 @@ void sglBuildKdTree() {
 	
 	kd_scene->doTheBuild(scene_triangles_array, scene->scene_triangles.size());
 
+	kd_scene->linearizeTree();
+
 }
 
 void sglRayTraceScene() {
