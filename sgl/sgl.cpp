@@ -64,6 +64,8 @@ long inters_steps = 0;
 
 KD_Tree *kd_scene;
 
+Triangle *scene_triangles_array;
+
 // ==========================================================================
 //  Ray-tracer
 // ==========================================================================
@@ -240,7 +242,7 @@ public:
 
 			Ray shadowRay(hit.getX(), hit.getY(), hit.getZ(), (*it)->GetPosition()->getX(), (*it)->GetPosition()->getY(), (*it)->GetPosition()->getZ());
 			
-			kd_scene->FindKDIntersection(shadowRay, cmp, object);
+			kd_scene->FindKDIntersection(shadowRay, cmp, scene_triangles_array, object);
 			//scene->FindShadowIntersection(shadowRay, cmp, object);
 			light_dst = sqrt(dir_to_light.getX()*dir_to_light.getX() + dir_to_light.getY()*dir_to_light.getY() + dir_to_light.getZ()*dir_to_light.getZ());
 
@@ -270,7 +272,7 @@ public:
 			Ray mirrorRay(hit.getX(), hit.getY(), hit.getZ(), reflected_dir.x + hit.getX(), reflected_dir.y + hit.getY(), reflected_dir.z + hit.getZ());
 
 			//recursion_object = FindShadowIntersection(mirrorRay, recurs_distance, object);
-			recursion_object = kd_scene->FindKDIntersection(mirrorRay, recurs_distance, object);
+			recursion_object = kd_scene->FindKDIntersection(mirrorRay, recurs_distance, scene_triangles_array, object);
 
 			if (recursion_object) {
 				mirroring = Illuminate(recursion_object, mirrorRay, recurs_distance, level + 1);
@@ -316,7 +318,7 @@ public:
 
 			Ray refractedRay(hit.getX(), hit.getY(), hit.getZ(), refracted_dir.x + hit.getX(), refracted_dir.y + hit.getY(), refracted_dir.z + hit.getZ());
 			//recursion_object = FindIntersection(refractedRay, recurs_distance, true);
-			recursion_object = kd_scene->FindKDIntersection(refractedRay, recurs_distance, object);
+			recursion_object = kd_scene->FindKDIntersection(refractedRay, recurs_distance, scene_triangles_array, object);
 
 			if (recursion_object) {
 				refracted = Illuminate(recursion_object, refractedRay, recurs_distance, level + 1);
@@ -1120,6 +1122,19 @@ void sglEnd(void) {
 	setErrCode(SGL_NO_ERROR);
 }
 
+void sglLinearize() {
+	cout << "Starting linearization " << scene->scene_triangles.size() << "..." << endl;
+
+	scene_triangles_array = new Triangle[scene->scene_triangles.size()];
+
+	for (size_t i = 0; i < scene->scene_triangles.size(); i++)
+	{
+		scene_triangles_array[i] = *scene->scene_triangles[i];
+	}
+
+	cout << "Linearization ended" << endl;
+}
+
 void sglVertex4f(float x, float y, float z, float w) {
 	if (!drawing || !active_context) return;
 	active_context->AddVertex(x, y, z, w);
@@ -1759,7 +1774,8 @@ void trace() {
 
 void sglBuildKdTree() {
 	cout << "Amount of triangles: " << scene->scene_triangles.size() << endl;
-	kd_scene->doTheBuild(scene->scene_triangles);
+	
+	kd_scene->doTheBuild(scene_triangles_array, scene->scene_triangles.size());
 
 }
 
@@ -1826,7 +1842,7 @@ void sglRayTraceScene() {
 			}*/
 
 			 //draw_obj = scene->FindIntersection(r, dist);
-			 draw_obj = kd_scene->FindKDIntersection(r, dist);
+			 draw_obj = kd_scene->FindKDIntersection(r, dist, scene_triangles_array);
 
 			//if (draw_obj) cout << draw_obj << endl;
 			}

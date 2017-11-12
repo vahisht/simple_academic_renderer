@@ -28,6 +28,11 @@ public:
 	static float voxel_size_cap; // DEBUG pro VS omezení RAM
 };
 
+struct triangle_id {
+	int id;
+	Triangle* t;
+};
+
 /**
 * Class used for split plane representation
 */
@@ -82,39 +87,39 @@ public:
 		return this->dX * this->dY * this->dZ;
 	}
 
-	void setVoxelParameters(vector<Triangle*> *T) {
+	void setVoxelParameters(Triangle* T, int size) {
 
-		this->position = Vector3f(T->at(0)->getVertices()->at(0));
+		this->position = Vector3f(T[0].getVertices()->at(0));
 		this->dX = 0.0;
 		this->dY = 0.0;	
 		this->dZ = 0.0;
 
-		for (int i = 1; i < T->size(); i++)
+		for (int i = 1; i < size; i++)
 		{
 			for (int j = 0; j < 3; j++)
 			{
-				if (T->at(i)->getVertices()->at(j)->getX() < this->position.x) {
-					this->dX = this->dX + this->position.x - T->at(i)->getVertices()->at(j)->getX();
-					this->position.x = T->at(i)->getVertices()->at(j)->getX();
+				if (T[i].getVertices()->at(j)->getX() < this->position.x) {
+					this->dX = this->dX + this->position.x - T[i].getVertices()->at(j)->getX();
+					this->position.x = T[i].getVertices()->at(j)->getX();
 				}
-				if (T->at(i)->getVertices()->at(j)->getX() > (this->position.x + this->dX)) {
-					this->dX = T->at(i)->getVertices()->at(j)->getX() - this->position.x;
-				}
-
-				if (T->at(i)->getVertices()->at(j)->getY() < this->position.y) {
-					this->dY = this->dY + this->position.y - T->at(i)->getVertices()->at(j)->getY();
-					this->position.y = T->at(i)->getVertices()->at(j)->getY();
-				}
-				if (T->at(i)->getVertices()->at(j)->getY() > (this->position.y + this->dY)) {
-					this->dY = T->at(i)->getVertices()->at(j)->getY() - this->position.y;
+				if (T[i].getVertices()->at(j)->getX() > (this->position.x + this->dX)) {
+					this->dX = T[i].getVertices()->at(j)->getX() - this->position.x;
 				}
 
-				if (T->at(i)->getVertices()->at(j)->getZ() < this->position.z) {
-					this->dZ = this->dZ + this->position.z - T->at(i)->getVertices()->at(j)->getZ();
-					this->position.z = T->at(i)->getVertices()->at(j)->getZ();
+				if (T[i].getVertices()->at(j)->getY() < this->position.y) {
+					this->dY = this->dY + this->position.y - T[i].getVertices()->at(j)->getY();
+					this->position.y = T[i].getVertices()->at(j)->getY();
 				}
-				if (T->at(i)->getVertices()->at(j)->getZ() > (this->position.z + this->dZ)) {
-					this->dZ = T->at(i)->getVertices()->at(j)->getZ() - this->position.z;
+				if (T[i].getVertices()->at(j)->getY() > (this->position.y + this->dY)) {
+					this->dY = T[i].getVertices()->at(j)->getY() - this->position.y;
+				}
+
+				if (T[i].getVertices()->at(j)->getZ() < this->position.z) {
+					this->dZ = this->dZ + this->position.z - T[i].getVertices()->at(j)->getZ();
+					this->position.z = T[i].getVertices()->at(j)->getZ();
+				}
+				if (T[i].getVertices()->at(j)->getZ() > (this->position.z + this->dZ)) {
+					this->dZ = T[i].getVertices()->at(j)->getZ() - this->position.z;
 				}
 			}
 
@@ -725,7 +730,7 @@ struct kdNode {
 	kdNode *left = NULL; /*!< Left child */
 	kdNode *right = NULL; /*!< Right child*/
 	splitPlane *p = NULL; /*!< Split plane */
-	vector<Triangle*>* triangles = NULL;
+	vector<int>* triangles = NULL;
 };
 
 
@@ -790,7 +795,7 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 /**
 * Main function for building of a kd-tree using SAH cost function
 */
-kdNode* BuildKdTree(vector<Triangle*> T_src);
+kdNode* BuildKdTree(Triangle* T_src, int size);
 
 struct  traversal_structure
 {
@@ -815,11 +820,11 @@ private:
 	Voxel* V;
 
 public:
-	void doTheBuild(vector<Triangle*> T) {
+	void doTheBuild(Triangle* T, int size) {
 		this->V = new Voxel();
-		this->V->setVoxelParameters(&T);
+		this->V->setVoxelParameters(T, size);
 
-		root = BuildKdTree(T);
+		root = BuildKdTree(T, size);
 
 		cout << "Tree built" << endl;
 	}
@@ -846,7 +851,7 @@ public:
 			for (int i = 0; i < node->triangles->size(); i++)
 			{
 				for (int i = 0; i < level; ++i) cout << "|  ";
-				node->triangles->at(i)->print();
+				//node->triangles->at(i)->print();
 			}
 		}
 	}
@@ -857,7 +862,7 @@ public:
 		this->printLevel(this->root, 0);
 	}
 
-	DrawObject* FindKDIntersection(Ray &ray, float & dist, DrawObject* obj = NULL) {
+	DrawObject* FindKDIntersection(Ray &ray, float & dist, Triangle* triangles, DrawObject* obj = NULL) {
 		stack<traversal_structure> stacktrav;
 		traversal_structure actual;
 		DrawObject* object = NULL;
@@ -985,10 +990,10 @@ public:
 				for (int i = 0; i < actual.w->triangles->size(); i++)
 				{
 					//inters_steps++; 
-					if (obj != NULL && obj == actual.w->triangles->at(i)) continue;
-					if (actual.w->triangles->at(i)->FindIntersection(ray, tmp) && tmp < dist) { // most definitely not ok
+					if (obj != NULL && obj == &triangles[ actual.w->triangles->at(i) ] ) continue;
+					if ( triangles[ actual.w->triangles->at(i) ].FindIntersection(ray, tmp) && tmp < dist) { // most definitely not ok
 						dist = tmp;
-						object = actual.w->triangles->at(i);
+						object = &triangles[ actual.w->triangles->at(i) ];
 					}
 				}
 

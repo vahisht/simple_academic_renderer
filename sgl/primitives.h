@@ -414,6 +414,7 @@ private:
 
 class DrawObject {
 public:
+	DrawObject() {}
 	DrawObject(string _name, MaterialBase* used_material) {
 		this->material = used_material->DeepCopy();
 		this->name = _name + " " + to_string(number);
@@ -464,25 +465,41 @@ private:
 class Triangle : public DrawObject
 {
 public:
+	Triangle() {
+		this->vertices = NULL;
+	}
 	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, MaterialBase* _used_material) :DrawObject("Triangle", _used_material), object_type(_object_type), vertices(_vertices) {
-		Vertex u = *vertices->at(1) - *vertices->at(0);
-		Vertex v = *vertices->at(2) - *vertices->at(0);
+		vertices_linear = new Vertex[3];
+
+		vertices_linear[0] = *_vertices->at(0);
+		vertices_linear[1] = *_vertices->at(1);
+		vertices_linear[2] = *_vertices->at(2);
+
+		Vertex u = vertices_linear[1] - vertices_linear[0];
+		Vertex v = vertices_linear[2] - vertices_linear[0];
 
 		//cout << "B" << endl;
 
 		this->normals = NULL;
+		this->normals_linear = NULL;
 
 		cout << "NULL" << endl;
 
-		this->normal = new Vector3f(
+		this->normal = *(new Vector3f(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
 			(u.getZ()*v.getX() - u.getX()*v.getZ()),
-			(u.getX()*v.getY() - u.getY()*v.getX()));
-		this->normal->Normalize();
+			(u.getX()*v.getY() - u.getY()*v.getX())));
+		this->normal.Normalize();
 	}
 	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, MaterialBase* _used_material) :DrawObject("Triangle", _used_material), object_type(_object_type), vertices(_vertices), normals(_normals) {
-		Vertex u = *vertices->at(1) - *vertices->at(0);
-		Vertex v = *vertices->at(2) - *vertices->at(0);
+		vertices_linear = new Vertex[3];
+
+		vertices_linear[0] = *_vertices->at(0);
+		vertices_linear[1] = *_vertices->at(1);
+		vertices_linear[2] = *_vertices->at(2);
+
+		Vertex u = vertices_linear[1] - vertices_linear[0];
+		Vertex v = vertices_linear[2] - vertices_linear[0];
 
 		/*cout << "Got " << _normals->size() << endl;
 		cout << "Ended with " << this->normals->size() << endl;*/
@@ -495,40 +512,43 @@ public:
 			normals->at(i)->normalizeThis();
 		}
 
-		this->normal = new Vector3f(
+		this->normal = *(new Vector3f(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
 			(u.getZ()*v.getX() - u.getX()*v.getZ()),
-			(u.getX()*v.getY() - u.getY()*v.getX()));
-		this->normal->Normalize();
+			(u.getX()*v.getY() - u.getY()*v.getX())));
+		this->normal.Normalize();
 	}
 	virtual ~Triangle() {
-		for (vector<Vertex*>::iterator it = vertices->begin(); it != vertices->end(); ++it)
-			delete *it;
-		delete vertices;
+		//if (this->vertices == NULL) return;
+		//cout << "Destructor called for " << this << endl;
+		/*for (vector<Vertex*>::iterator it = vertices->begin(); it != vertices->end(); ++it)
+		delete *it;*/
+
+		delete vertices_linear;
 		if (normals) delete normals;
-		delete normal;
+		//delete normal;
 	}
 	void normals_print() {
 		cout << this->normals->size() << endl;
 	}
 	void print() {
-		cout << "(" << this->vertices->at(0)->getX() << "," << this->vertices->at(0)->getY() << "," << this->vertices->at(0)->getZ() << ") ";
-		cout << "(" << this->vertices->at(1)->getX() << "," << this->vertices->at(1)->getY() << "," << this->vertices->at(1)->getZ() << ") ";
-		cout << "(" << this->vertices->at(2)->getX() << "," << this->vertices->at(2)->getY() << "," << this->vertices->at(2)->getZ() << ")" << endl;
+		cout << "(" << this->vertices_linear[0].getX() << "," << this->vertices_linear[0].getY() << "," << this->vertices_linear[0].getZ() << ") ";
+		cout << "(" << this->vertices_linear[1].getX() << "," << this->vertices_linear[1].getY() << "," << this->vertices_linear[1].getZ() << ") ";
+		cout << "(" << this->vertices_linear[2].getX() << "," << this->vertices_linear[2].getY() << "," << this->vertices_linear[2].getZ() << ")" << endl;
 	}
 	virtual Vector3f getNormal(Vertex hit) {
 		//cout << this->normals->size() << endl;
 		//return *this->normal; // DEBUG
-		if (this->normals == NULL) return *this->normal;
+		if (this->normals == NULL) return this->normal;
 
 		//cout << "Normals available" << endl;
-		
+
 		Vertex v2_1, v2_3, v2_t;
 
 		double bary[3];
-		v2_1 = *this->vertices->at(0) - *this->vertices->at(1);
-		v2_3 = *this->vertices->at(2) - *this->vertices->at(1);
-		v2_t = hit - *this->vertices->at(1);
+		v2_1 = this->vertices_linear[0] - this->vertices_linear[1];
+		v2_3 = this->vertices_linear[2] - this->vertices_linear[1];
+		v2_t = hit - this->vertices_linear[1];
 
 		float d00 = Vertex::DotProduct(v2_1, v2_1);
 		float d01 = Vertex::DotProduct(v2_1, v2_3);
@@ -548,21 +568,21 @@ public:
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
 
-		//cout << ray.direction->getX() << "-" << ray.direction->getY() << "-" << ray.direction->getZ() << ", test:" << this << endl;
+										  //cout << ray.direction->getX() << "-" << ray.direction->getY() << "-" << ray.direction->getZ() << ", test:" << this << endl;
 
-		float angle = dotProduct(*normal, *ray.direction);
-		if ( !unCull && angle > 0)
+		float angle = dotProduct(normal, *ray.direction);
+		if (!unCull && angle > 0)
 			return false; // behind ray start
 
 						  // get triangle edge vectors and plane normal
-		Vertex u = *vertices->at(1) - *vertices->at(0);
-		Vertex v = *vertices->at(2) - *vertices->at(0);
-		Vertex n = Vertex(this->normal->x, this->normal->y, this->normal->z, 1.0f); // cross product
-																					//if (n == (Vector)0)			// triangle is degenerate
-																					//	return -1;					// do not deal with this case
+		Vertex u = vertices_linear[1] - vertices_linear[0];
+		Vertex v = vertices_linear[2] - vertices_linear[0];
+		Vertex n = Vertex(this->normal.x, this->normal.y, this->normal.z, 1.0f); // cross product
+																				 //if (n == (Vector)0)			// triangle is degenerate
+																				 //	return -1;					// do not deal with this case
 
-																					//dir = R.P1 - R.P0;			// ray direction vector
-		Vertex w0 = *ray.origin - *vertices->at(0);
+																				 //dir = R.P1 - R.P0;			// ray direction vector
+		Vertex w0 = *ray.origin - vertices_linear[0];
 		a = (-1)*(Vertex::DotProduct(n, w0));
 		b = Vertex::DotProduct(n, *ray.direction);
 		if (fabs(b) < SMALL_NUM) {		// ray is  parallel to triangle plane
@@ -583,7 +603,7 @@ public:
 		uu = Vertex::DotProduct(u, u);
 		uv = Vertex::DotProduct(u, v);
 		vv = Vertex::DotProduct(v, v);
-		Vertex w = I - *vertices->at(0);
+		Vertex w = I - vertices_linear[0];
 		wu = Vertex::DotProduct(w, u);
 		wv = Vertex::DotProduct(w, v);
 		D = uv * uv - uu * vv;
@@ -599,7 +619,7 @@ public:
 
 		I = I - *ray.origin; // Z I udelam pouze vektor od zacatku k bodu pruniku pro vypocitani vzdalenosti
 		tHit = sqrt((I.getX() * I.getX()) + (I.getY()* I.getY()) + (I.getZ() * I.getZ()));
-		
+
 		return 1;                       // I is in T
 
 
@@ -610,8 +630,8 @@ public:
 		float r2 = (double)rand() / (RAND_MAX);
 
 		float u, v;
-		Vertex e1 = (*vertices->at(1) - *vertices->at(0));
-		Vertex e2 = (*vertices->at(2) - *vertices->at(0));
+		Vertex e1 = (vertices_linear[1] - vertices_linear[0]);
+		Vertex e2 = (vertices_linear[2] - vertices_linear[0]);
 		if (r1 + r2 > 1) {
 			u = 1 - r1;
 			v = 1 - r2;
@@ -621,13 +641,13 @@ public:
 			v = r2;
 		}
 
-		return (*vertices->at(0) + e1*u + e2*v);
+		return (vertices_linear[0] + e1*u + e2*v);
 	}
 
 	float areaSize() {
-		float a = Vertex::Distance(*vertices->at(0), *vertices->at(1));
-		float b = Vertex::Distance(*vertices->at(1), *vertices->at(2));
-		float c = Vertex::Distance(*vertices->at(2), *vertices->at(0));
+		float a = Vertex::Distance(vertices_linear[0], vertices_linear[1]);
+		float b = Vertex::Distance(vertices_linear[1], vertices_linear[2]);
+		float c = Vertex::Distance(vertices_linear[2], vertices_linear[0]);
 
 		// Heron's formula
 		float s = (a + b + c) / 2;
@@ -637,9 +657,12 @@ public:
 	vector<Vertex*>* getVertices() { return this->vertices; }
 
 private:
-	Vector3f* normal;
+	Vector3f normal;
 	sglEElementType object_type;
 	vector<Vertex*>* vertices;
+	Vertex *vertices_linear = NULL;
 	vector<Vertex*>* normals = NULL;
+	Vertex *normals_linear = NULL;
+
 };
 

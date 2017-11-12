@@ -97,7 +97,7 @@ pair<float, bool> SAH(splitPlane *p, Voxel* V, int N_L, int N_R, int N_P) {
 /**
 * Function used for classification of triangles into their respective sub-voxels
 */
-vector<int>* ClassifyLeftRightBoth(vector<Triangle*> *T, vector<triangleEvent*>* E, splitPlane *p) {
+vector<int>* ClassifyLeftRightBoth(vector<int> *T, vector<triangleEvent*>* E, splitPlane *p) {
 
 	vector<int> *triangleSides = new vector<int>(T->size(), 2); // 0 = left, 1 = right, 2 = both. We first assume all triangles are on both sides
 
@@ -289,7 +289,7 @@ vector<triangleEvent*>* mergeEvents(vector<triangleEvent*>* E1, vector<triangleE
 /**
 * Recursive tree-building function
 */
-kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane* pp) {
+kdNode* RecBuild(vector<int>* T, Voxel *V, vector<triangleEvent*>* E, splitPlane* pp, Triangle* triangles) {
 	planeSolution *best;
 	kdNode* result = new kdNode();
 	pair<Voxel*, Voxel*> splitted;
@@ -299,7 +299,7 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 	vector<int> scrambledIndexes_L(T->size(), -1);
 	vector<int> scrambledIndexes_R(T->size(), -1);
 	vector<int> *classification;
-	vector<Triangle*> *T_L, *T_R;
+	vector<int> *T_L, *T_R;
 	vector<triangleEvent*> *E_L, *E_R, *E_R_new, *E_L_new;
 
 	if (config::debug) cout << "Recursion with " << T->size() << " triangles" << endl;
@@ -361,8 +361,8 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 	//cout << "Classifying triangles" << endl;
 	// Classify triangles and create new needed events
 	classification = ClassifyLeftRightBoth(T, E, best->plane);
-	T_L = new vector<Triangle*>;
-	T_R = new vector<Triangle*>;
+	T_L = new vector<int>;
+	T_R = new vector<int>;
 
 	/*for (int i = 0; i < E->size(); i++)
 	{
@@ -418,10 +418,10 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 			if (config::debug)
 				for (size_t j = 0; j < 3; j++)
 				{
-					cout << T->at(E->at(i)->triangleID)->getVertices()->at(j)->getX() << " " << T->at(E->at(i)->triangleID)->getVertices()->at(j)->getY() << " " << T->at(E->at(i)->triangleID)->getVertices()->at(j)->getZ() << endl;
+					cout << triangles[ T->at(E->at(i)->triangleID) ].getVertices()->at(j)->getX() << " " << triangles[ T->at(E->at(i)->triangleID) ].getVertices()->at(j)->getY() << " " << triangles[ T->at(E->at(i)->triangleID) ].getVertices()->at(j)->getZ() << endl;
 				}
-			if (!(AABB1.clipToVoxel(V1, T->at(E->at(i)->triangleID)))) { if (config::debug) cout << "No triangle intersection with plane in V1" << endl; }
-			if (!(AABB2.clipToVoxel(V2, T->at(E->at(i)->triangleID)))) { if (config::debug) cout << "No triangle intersection with plane in V2" << endl; }
+			if (!(AABB1.clipToVoxel(V1, &triangles[ T->at(E->at(i)->triangleID) ]  ))) { if (config::debug) cout << "No triangle intersection with plane in V1" << endl; }
+			if (!(AABB2.clipToVoxel(V2, &triangles[ T->at(E->at(i)->triangleID) ]  ))) { if (config::debug) cout << "No triangle intersection with plane in V2" << endl; }
 
 			if (config::debug) {
 				cout << "New bounds:" << endl;
@@ -605,9 +605,9 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 	// Fill in the kdNode data
 	result->p = best->plane;
 	if (config::debug) cout << "Creating left child" << endl;
-	result->left = RecBuild(T_L, V1, E_L, result->p);
+	result->left = RecBuild(T_L, V1, E_L, result->p, triangles);
 	if (config::debug) cout << "Creating right child" << endl;
-	result->right = RecBuild(T_R, V2, E_R, result->p);
+	result->right = RecBuild(T_R, V2, E_R, result->p, triangles);
 
 	return result;
 }
@@ -615,25 +615,26 @@ kdNode* RecBuild(vector<Triangle*>* T, Voxel *V, vector<triangleEvent*>* E, spli
 /**
 * Main function for building of a kd-tree using SAH cost function
 */
-kdNode* BuildKdTree(vector<Triangle*> T_src) {
+kdNode* BuildKdTree(Triangle* T_src, int size) {
 	Voxel *V = new Voxel;
 	vector<triangleEvent*>* E = new vector<triangleEvent*>;
 	triangleEvent *event;
-	vector<Triangle*>* T = new vector<Triangle*>(T_src.size(), NULL);
+	vector<int >* T = new vector<int>(size, NULL);
 	boundingBox AABB;
 
 	cout << "Build started" << endl;
 
 	// make triangles happen
-	for (int i = 0; i < T_src.size(); i++)
+	for (int i = 0; i < size; i++)
 	{
-		T->at(i) = T_src[i];
+		T->at(i) = i;
 	}
 
+	cout << "Data structures done" << endl;
 	// create events
-	for (int i = 0; i < T_src.size(); i++)
+	for (int i = 0; i < size; i++)
 	{
-		AABB.boundTriangle(T_src[i]);
+		AABB.boundTriangle(&T_src[i]);
 
 		event = new triangleEvent();
 		if (fabs(AABB.x_min - AABB.x_max) < config::epsilon) {
@@ -710,10 +711,10 @@ kdNode* BuildKdTree(vector<Triangle*> T_src) {
 	sort(E->begin(), E->end(), eventComparator());
 
 	// create the Voxel
-	V->setVoxelParameters(T);
+	V->setVoxelParameters(T_src, size);
 
 	// call the recursive function
-	return RecBuild(T, V, E, NULL);
+	return RecBuild(T, V, E, NULL, T_src);
 
 
 }

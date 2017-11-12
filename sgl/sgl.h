@@ -217,6 +217,8 @@ void sglBegin(sglEElementType mode);
  */
 void sglEnd(void);
 
+void sglLinearize();
+
 /// Input of a vertex.
 /**
   ERRORS:

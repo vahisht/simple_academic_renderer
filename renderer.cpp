@@ -405,6 +405,8 @@ RayTraceAssimpScene(const char *scenename)
 		}
 	}
 
+	
+
 	// VIEW
 	// default values – overwritten if present in file
 	float from_x = 0.0f;
@@ -497,6 +499,8 @@ RayTraceAssimpScene(const char *scenename)
 	sgluLookAt(
 		from_x, from_y, from_z, at_x, at_y, at_z, up_x, up_y, up_z );
 
+	sglLinearize();
+	_sleep(20000);
 	sglBuildKdTree();
 	cout << "KD-tree built" << endl;
 	// compute a ray traced image and store it in the color buffer
