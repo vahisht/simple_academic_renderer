@@ -65,6 +65,7 @@ long inters_steps = 0;
 KD_Tree *kd_scene;
 
 Triangle *scene_triangles_array;
+kdNodeLinear* kd_tree;
 
 // ==========================================================================
 //  Ray-tracer
@@ -1777,7 +1778,7 @@ void sglBuildKdTree() {
 	
 	kd_scene->doTheBuild(scene_triangles_array, scene->scene_triangles.size());
 
-	kd_scene->linearizeTree();
+	kd_tree = kd_scene->linearizeTree();
 
 }
 

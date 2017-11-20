@@ -740,14 +740,15 @@ struct kdNode {
 struct kdNodeLinear {
 	int left; /*!< Left child */
 	int right; /*!< Right child*/
+	bool splits = false;
 	splitPlane p; /*!< Split plane */
-	Triangle* triangles = NULL;
+	int* triangles = NULL;
 
 	kdNodeLinear() {
 
 	}
 
-	kdNodeLinear(int _left, int _right, splitPlane _p, Triangle* _triangles): left(_left), right(_right), p(_p), triangles(_triangles) {}
+	kdNodeLinear(int _left, int _right, splitPlane _p, int* _triangles): left(_left), right(_right), p(_p), triangles(_triangles) {}
 };
 
 
@@ -838,12 +839,42 @@ private:
 	Voxel* V;
 	int node_count = 0;
 
+	int linearizeTreeRecursive( kdNodeLinear* result, int &size, kdNode* node ) {
+		int index_used = size++;
+
+		if (node->p != NULL) {
+			result[index_used].splits = true;
+			result[index_used].p = *node->p;
+		}
+		else {
+			result[index_used].splits = false;
+		}
+
+		if (node->triangles != NULL) {
+			result[index_used].triangles = new int[ node->triangles->size() ];
+
+			for (size_t i = 0; i < node->triangles->size(); i++)
+			{
+				result[index_used].triangles[i] = node->triangles->at(i);
+			}
+		}
+
+		result[index_used].left		= node->left != NULL	? linearizeTreeRecursive(result, size, node->left)	: -1;
+		result[index_used].right	= node->right != NULL	? linearizeTreeRecursive(result, size, node->right)	: -1;
+
+
+		return index_used;
+	}
+
 public:
 	kdNodeLinear* linearizeTree() {
 		kdNodeLinear* result = new kdNodeLinear[ this->node_count ];
 		cout << "Kd-tree node count: " << this->node_count << endl;
+		int size = 0;
 
+		linearizeTreeRecursive( result, size, this->root );
 
+		cout << "Max linear Kd-tree index is " << size << endl;
 
 		return result;
 	}
