@@ -742,6 +742,7 @@ struct kdNodeLinear {
 	int right; /*!< Right child*/
 	bool splits = false;
 	splitPlane p; /*!< Split plane */
+	int len;
 	int* triangles = NULL;
 
 	kdNodeLinear() {
@@ -832,6 +833,22 @@ struct  traversal_structure
 	}
 };
 
+struct  traversal_structure_linear
+{
+	int node;
+	float mint;
+	float maxt;
+
+	traversal_structure_linear() {
+	}
+
+	traversal_structure_linear(int node, float mint, float maxt) {
+		this->node = node;
+		this->mint = mint;
+		this->maxt = maxt;
+	}
+};
+
 class KD_Tree {
 private:
 	vector<kdNode> tree;
@@ -852,11 +869,16 @@ private:
 
 		if (node->triangles != NULL) {
 			result[index_used].triangles = new int[ node->triangles->size() ];
+			result[index_used].len = node->triangles->size();
 
 			for (size_t i = 0; i < node->triangles->size(); i++)
 			{
 				result[index_used].triangles[i] = node->triangles->at(i);
 			}
+		}
+		else {
+			result[index_used].triangles = NULL;
+			result[index_used].len = 0;
 		}
 
 		result[index_used].left		= node->left != NULL	? linearizeTreeRecursive(result, size, node->left)	: -1;
@@ -867,6 +889,10 @@ private:
 	}
 
 public:
+	Voxel* getVoxel() {
+		return this->V;
+	}
+
 	kdNodeLinear* linearizeTree() {
 		kdNodeLinear* result = new kdNodeLinear[ this->node_count ];
 		cout << "Kd-tree node count: " << this->node_count << endl;
@@ -921,10 +947,10 @@ public:
 		this->printLevel(this->root, 0);
 	}
 
-	DrawObject* FindKDIntersection(Ray &ray, float & dist, Triangle* triangles, DrawObject* obj = NULL) {
+	Triangle* FindKDIntersection(Ray &ray, float & dist, Triangle* triangles/*, Triangle* obj = NULL*/) {
 		stack<traversal_structure> stacktrav;
 		traversal_structure actual;
-		DrawObject* object = NULL;
+		Triangle* object = NULL;
 		dist = numeric_limits<float>::max();
 		float tmp = numeric_limits<float>::min();
 		float t = numeric_limits<float>::max();
@@ -1049,7 +1075,7 @@ public:
 				for (int i = 0; i < actual.w->triangles->size(); i++)
 				{
 					//inters_steps++; 
-					if (obj != NULL && obj == &triangles[ actual.w->triangles->at(i) ] ) continue;
+					//if (obj != NULL && obj == &triangles[ actual.w->triangles->at(i) ] ) continue;
 					if ( triangles[ actual.w->triangles->at(i) ].FindIntersection(ray, tmp) && tmp < dist) { // most definitely not ok
 						dist = tmp;
 						object = &triangles[ actual.w->triangles->at(i) ];

@@ -726,14 +726,14 @@ d is 1/(c0 + c1*d + c2*d^2).
 	 No context has been allocated yet or sglEmissiveMaterial is called between a 
 	 call to sglBegin() and the corresponding call to sglEnd().
  */
-void sglEmissiveMaterial(
+/*void sglEmissiveMaterial(
 						 const float r,
 						 const float g,
 						 const float b,
 						 const float c0,
 						 const float c1,
 						 const float c2
-						 );
+						 );*/
 
 /// Set the HDR environment map defining the "background"
 /**

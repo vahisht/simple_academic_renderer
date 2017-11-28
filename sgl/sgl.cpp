@@ -51,7 +51,9 @@ TransformationStack* modelViewStack = NULL;
 TransformationStack* projectionStack = NULL;
 TransformationStack* activeStack = NULL;		// Transformation stacks
 bool drawing_scene;								// scena in progress
-MaterialBase* used_material;					// current material
+//MaterialBase* used_material;					// current material
+Material* used_material;
+vector<Material*> used_materials;
 SceneStructure* scene;							// current scene object
 
 int env_width;
@@ -65,7 +67,10 @@ long inters_steps = 0;
 KD_Tree *kd_scene;
 
 Triangle *scene_triangles_array;
+Material* materials;
 kdNodeLinear* kd_tree;
+Voxel V;
+int lights_len = 0;
 
 // ==========================================================================
 //  Ray-tracer
@@ -75,21 +80,23 @@ kdNodeLinear* kd_tree;
 class PointLight
 {
 public:
+	PointLight() {
+	}
 	PointLight(float x, float y, float z, float _r, float _g, float _b)	{
-		position = new Vertex(x, y, z, 1);
-		intensity = new Vector3f(_r, _g, _b);
+		position = *new Vertex(x, y, z, 1);
+		intensity = *new Vector3f(_r, _g, _b);
 	}
 	~PointLight() {
-		delete position;
-		delete intensity;
 	}
-	Vertex* GetPosition()	{ return position; }
-	Vector3f* GetIntensity(){ return intensity; }
+	Vertex GetPosition()	{ return position; }
+	Vector3f GetIntensity(){ return intensity; }
 private:
-	Vertex* position;
-	Vector3f* intensity;
+	Vertex position;
+	Vector3f intensity;
 	float r, g, b; // intensity
 };
+
+PointLight* lights;
 
 Vector3f reflected(Vector3f normal, Vertex to_light) {
 	//Vertex light = to_light.normalize();
@@ -132,7 +139,7 @@ class SceneStructure {
 public:
 	//SceneStructure() {}
 	~SceneStructure() {
-		for (vector<DrawObject*>::iterator it = scene_primitives.begin(); it != scene_primitives.end(); ++it)
+		for (vector<Triangle*>::iterator it = scene_primitives.begin(); it != scene_primitives.end(); ++it)
 			delete (*it);
 		for (vector<PointLight*>::iterator it = scene_lights.begin(); it != scene_lights.end(); ++it)
 			delete (*it);
@@ -140,30 +147,31 @@ public:
 			delete (*it);
 	}
 	void AddPrimitive(float x, float y, float z, float _radius) {
-		scene_primitives.push_back(new Sphere(x, y, z, _radius, used_material));
+		//scene_primitives.push_back(new Sphere(x, y, z, _radius, used_material));
+		cout << "Spheres no longer supported!!" << endl;
 	}
 	void AddPrimitive(sglEElementType _object_type, vector<Vertex*>* _vertices, bool emissive) {
 		
 		if (emissive) {
-			scene_emissives.push_back(new Triangle(_object_type, _vertices, used_material));
-			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_material));
+			scene_emissives.push_back(new Triangle(_object_type, _vertices, used_materials.size()-1));
+			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_materials.size() - 1));
 		} else {
-			scene_primitives.push_back(new Triangle(_object_type, _vertices, used_material));
-			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_material));
+			scene_primitives.push_back(new Triangle(_object_type, _vertices, used_materials.size() - 1));
+			scene_triangles.push_back(new Triangle(_object_type, _vertices, used_materials.size() - 1));
 		}
 	}
 	void AddPrimitive(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, bool emissive) {
 		//cout << "Processing " << _normals->size() << endl;
 		if (emissive) {
 			//cout << "Emissive " << endl;
-			scene_emissives.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
-			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+			scene_emissives.push_back(new Triangle(_object_type, _vertices, _normals, used_materials.size() - 1));
+			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_materials.size() - 1));
 		}
 		else {
-			scene_primitives.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+			scene_primitives.push_back(new Triangle(_object_type, _vertices, _normals, used_materials.size() - 1));
 			//cout << "--" << endl;
 			//cout << _normals->size() << endl;
-			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_material));
+			scene_triangles.push_back(new Triangle(_object_type, _vertices, _normals, used_materials.size() - 1));
 			//scene_triangles[scene_triangles.size() - 1]->normals_print();
 		}
 	}
@@ -171,8 +179,8 @@ public:
 		scene_lights.push_back(new PointLight(x, y, z, r, g, b));
 	}
 
-	DrawObject* FindIntersection(Ray &ray, float & dist, bool uncullBackFaces = false) {
-		DrawObject* object = NULL;
+	Triangle* FindIntersection(Ray &ray, float & dist, bool uncullBackFaces = false) {
+		Triangle* object = NULL;
 		dist = numeric_limits<float>::max();		// tady by asi bylo lepší mít far plane scény spíše než nekonečno. Věci co jsou za far plane už totiž nekreslíme
 		float tmp;
 		for (vector<Triangle*>::iterator it = scene_triangles.begin(); it != scene_triangles.end(); it++){
@@ -190,10 +198,10 @@ public:
 		}*/
 		return object;
 	}
-	DrawObject* FindShadowIntersection(Ray &ray, float & dist, DrawObject* obj) {
+	Triangle* FindShadowIntersection(Ray &ray, float & dist, Triangle* obj) {
 		dist = numeric_limits<float>::max();		// tady by asi bylo lepší mít far plane scény spíše než nekonečno. Věci co jsou za far plane už totiž nekreslíme
 		float tmp;
-		DrawObject* closest = NULL;
+		Triangle* closest = NULL;
 		for (vector<Triangle*>::iterator it = scene_triangles.begin(); it != scene_triangles.end(); it++) {
 			if ((*it) == obj) continue;
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
@@ -201,7 +209,7 @@ public:
 				closest = (*it);
 			}
 		}
-		for (vector<DrawObject*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
+		for (vector<Triangle*>::iterator it = scene_emissives.begin(); it != scene_emissives.end(); it++) {
 			if ((*it) == obj) continue;
 			if ((*it)->FindIntersection(ray, tmp) && tmp < dist) {
 				dist = tmp;
@@ -210,7 +218,7 @@ public:
 		}
 		return closest;
 	}
-
+	/*
 	Vector3f Illuminate(DrawObject* object, Ray &ray, float distance, int level) {
 		//return Vector3f(1, 1, 1);
 		if (object->GetMaterial()->Emissive()) {
@@ -375,13 +383,393 @@ public:
 			}
 		}
 		return color;
+	}*/
+
+struct find_struct {
+
+	int object;
+	float dist;
+
+};
+
+find_struct FindKDIntersection(RayLinear ray) {
+	find_struct result;
+	stack<traversal_structure_linear> stacktrav;
+	traversal_structure_linear actual;
+	bool found = false;
+	
+	result.dist = numeric_limits<float>::max();
+	result.object = -1;
+
+	float tmp = numeric_limits<float>::min();
+	float t = numeric_limits<float>::max();
+
+	int axis;
+	float tmp1;
+	float tmp2;
+	float value;
+	float ray_origin_axis = 1.0;
+	float ray_dir_axis = 1.0;
+	int near_child, far_child;
+
+
+	if (!(fabs(ray.direction.getX()) < config::epsilon)) {
+		tmp1 = (V.position.x - ray.origin.getX()) / ray.direction.getX();
+		tmp2 = (V.position.x + V.dX - ray.origin.getX()) / ray.direction.getX();
+
+		tmp = max(tmp, min(tmp1, tmp2));
+		t = min(t, max(tmp1, tmp2));
+
+	}
+
+	if (!(fabs(ray.direction.getY()) < config::epsilon)) {
+		tmp1 = (V.position.y - ray.origin.getY()) / ray.direction.getY();
+		tmp2 = (V.position.y + V.dY - ray.origin.getY()) / ray.direction.getY();
+
+		tmp = max(tmp, min(tmp1, tmp2));
+		t = min(t, max(tmp1, tmp2));
+
+	}
+
+	if (!(fabs(ray.direction.getZ()) < config::epsilon)) {
+		tmp1 = (V.position.z - ray.origin.getZ()) / ray.direction.getZ();
+		tmp2 = (V.position.z + V.dZ - ray.origin.getZ()) / ray.direction.getZ();
+
+		tmp = max(tmp, min(tmp1, tmp2));
+		t = min(t, max(tmp1, tmp2));
+
+	}
+
+	//cout << "Final voxel bounds are are: " << tmp << " " << t << endl;
+
+	stacktrav.push(traversal_structure_linear(0, tmp, t));
+	//std::cout << "Pushed in " << this->root << " " << tmp << " " << t << std::endl;
+
+	while (!stacktrav.empty()) {
+		actual = stacktrav.top();
+		//std::cout << "Popped out " << actual.w << " " << actual.mint << " " << actual.maxt << std::endl;
+		stacktrav.pop();
+
+		while (kd_tree[actual.node].splits) {
+			//trav_steps++;
+			axis = kd_tree[actual.node].p.dimension;
+			value = kd_tree[actual.node].p.position;
+			//std::cout << "Split plane " << value << " (" << axis << ")" << std::endl;
+
+			switch (axis) {
+			case 0:
+				ray_origin_axis = ray.origin.getX();
+				ray_dir_axis = ray.direction.getX();
+				break;
+			case 1:
+				ray_origin_axis = ray.origin.getY();
+				ray_dir_axis = ray.direction.getY();
+				break;
+			case 2:
+				ray_origin_axis = ray.origin.getZ();
+				ray_dir_axis = ray.direction.getZ();
+				break;
+			}
+
+
+			if (value < ray_origin_axis) {
+				near_child = kd_tree[actual.node].right;
+				far_child = kd_tree[actual.node].left;
+				//nearChild = actual.w->right;
+				//farChild = actual.w->left;
+			}
+			else {
+				near_child = kd_tree[actual.node].left;
+				far_child = kd_tree[actual.node].right;
+				//nearChild = actual.w->left;
+				//farChild = actual.w->right;
+			}
+
+
+			if (!(fabs(ray_dir_axis) < config::epsilon)) {
+				t = (value - ray_origin_axis) / ray_dir_axis;
+			}
+			else {
+				t = numeric_limits<float>::max();
+			}
+
+			//std::cout << t << endl;
+
+			if (t < 0 || t > actual.maxt) { // near
+				actual.node = near_child;
+			}
+			else {
+				if (t < actual.mint) { // far
+					actual.node = far_child;
+				}
+				else { // wherever you are
+					stacktrav.push(traversal_structure_linear(far_child, t, actual.maxt));
+					actual.node = near_child;
+					actual.maxt = t;
+				}
+			}
+
+		} // while not leaf
+
+		if (kd_tree[actual.node].triangles != NULL) {
+			for (int i = 0; i < kd_tree[actual.node].len; i++)
+			{
+				//inters_steps++; 
+				if (scene_triangles_array[kd_tree[actual.node].triangles[i]].FindIntersection(ray, tmp) && tmp < result.dist) { // most definitely not ok
+					result.dist = tmp;
+					result.object = kd_tree[actual.node].triangles[i];
+					found = true;
+				}
+			}
+
+
+
+		}
+
+	} //while stack not empty
+
+	
+	return result;
+}
+
+
+	Vector3f Illuminate(int x, int y, float* ray_start, float *invMatrix, int width, int height, int index) {
+		int obj = -1;
+		int level = 0;
+		RayLinear ray;
+
+		stack<traversal_structure_linear> stacktrav;
+		traversal_structure_linear actual;
+		int object;
+		bool found = false;
+		float dist = numeric_limits<float>::max();
+		float tmp = numeric_limits<float>::min();
+		float t = numeric_limits<float>::max();
+
+		int axis;
+		float tmp1;
+		float tmp2;
+		float value;
+		float ray_origin_axis = 1.0;
+		float ray_dir_axis = 1.0;
+		int near_child, far_child;
+
+		float ray_end[4] = { x, y, -1, 1 };
+
+		float a_orig[4];
+		for (size_t i = 0; i < 4; i++) {
+			a_orig[i] = ray_end[i];
+			ray_end[i] = 0;
+		}
+		for (size_t i = 0; i < 4; i++) {
+			for (size_t j = 0; j < 4; j++) {
+				ray_end[i] += a_orig[j] * invMatrix[(i % 4) + 4 * j];
+			}
+		}
+
+		for (size_t i = 0; i < 3; i++) {
+			ray_end[i] = ray_end[i] / ray_end[3];
+		}
+
+		ray.adjust(ray_start[0], ray_start[1], ray_start[2], ray_end[0], ray_end[1], ray_end[2]);
+
+
+		// Start
+
+
+		if (!(fabs(ray.direction.getX()) < config::epsilon)) {
+			tmp1 = (V.position.x - ray.origin.getX()) / ray.direction.getX();
+			tmp2 = (V.position.x + V.dX - ray.origin.getX()) / ray.direction.getX();
+
+			tmp = max(tmp, min(tmp1, tmp2));
+			t = min(t, max(tmp1, tmp2));
+
+		}
+
+		if (!(fabs(ray.direction.getY()) < config::epsilon)) {
+			tmp1 = (V.position.y - ray.origin.getY()) / ray.direction.getY();
+			tmp2 = (V.position.y + V.dY - ray.origin.getY()) / ray.direction.getY();
+
+			tmp = max(tmp, min(tmp1, tmp2));
+			t = min(t, max(tmp1, tmp2));
+
+		}
+
+		if (!(fabs(ray.direction.getZ()) < config::epsilon)) {
+			tmp1 = (V.position.z - ray.origin.getZ()) / ray.direction.getZ();
+			tmp2 = (V.position.z + V.dZ - ray.origin.getZ()) / ray.direction.getZ();
+
+			tmp = max(tmp, min(tmp1, tmp2));
+			t = min(t, max(tmp1, tmp2));
+
+		}
+
+		//cout << "Final voxel bounds are are: " << tmp << " " << t << endl;
+
+		stacktrav.push(traversal_structure_linear(0, tmp, t));
+		//std::cout << "Pushed in " << this->root << " " << tmp << " " << t << std::endl;
+
+		while (!stacktrav.empty()) {
+			actual = stacktrav.top();
+			//std::cout << "Popped out " << actual.w << " " << actual.mint << " " << actual.maxt << std::endl;
+			stacktrav.pop();
+
+			while ( kd_tree[ actual.node ].splits ) {
+				//trav_steps++;
+				axis = kd_tree[actual.node].p.dimension;
+				value = kd_tree[actual.node].p.position;
+				//std::cout << "Split plane " << value << " (" << axis << ")" << std::endl;
+
+				switch (axis) {
+				case 0:
+					ray_origin_axis = ray.origin.getX();
+					ray_dir_axis = ray.direction.getX();
+					break;
+				case 1:
+					ray_origin_axis = ray.origin.getY();
+					ray_dir_axis = ray.direction.getY();
+					break;
+				case 2:
+					ray_origin_axis = ray.origin.getZ();
+					ray_dir_axis = ray.direction.getZ();
+					break;
+				}
+
+
+				if (value < ray_origin_axis) {
+					near_child = kd_tree[actual.node].right;
+					far_child = kd_tree[actual.node].left;
+					//nearChild = actual.w->right;
+					//farChild = actual.w->left;
+				}
+				else {
+					near_child = kd_tree[actual.node].left;
+					far_child = kd_tree[actual.node].right;
+					//nearChild = actual.w->left;
+					//farChild = actual.w->right;
+				}
+
+
+				if (!(fabs(ray_dir_axis) < config::epsilon)) {
+					t = (value - ray_origin_axis) / ray_dir_axis;
+				}
+				else {
+					t = numeric_limits<float>::max();
+				}
+
+				//std::cout << t << endl;
+
+				if (t < 0 || t > actual.maxt) { // near
+					actual.node = near_child;
+				}
+				else {
+					if (t < actual.mint) { // far
+						actual.node = far_child;
+					}
+					else { // wherever you are
+						stacktrav.push(traversal_structure_linear(far_child, t, actual.maxt));
+						actual.node = near_child;
+						actual.maxt = t;
+					}
+				}
+
+			} // while not leaf
+
+			if (kd_tree[actual.node].triangles != NULL) {
+				for (int i = 0; i < kd_tree[actual.node].len ; i++)
+				{
+					//inters_steps++; 
+					if (obj == kd_tree[actual.node].triangles[i] ) continue;
+					if (scene_triangles_array[kd_tree[actual.node].triangles[i]].FindIntersection(ray, tmp) && tmp < dist) { // most definitely not ok
+						dist = tmp;
+						object = kd_tree[actual.node].triangles[i];
+						found = true;
+					}
+				}
+
+
+
+			}
+
+		} //while stack not empty
+	
+
+		if (!found) return Vector3f(0.0f, 0.0f, 0.0f);
+
+		/*if (object->GetMaterial()->Emissive()) {
+			MaterialEmissive* obj_emis_material = (MaterialEmissive*)(object->GetMaterial());
+			return obj_emis_material->GetIntensity();
+		}*/
+
+		//cout << scene_triangles_array[object].GetMaterial() << endl;
+		Material obj_material = materials[ scene_triangles_array[ object ].GetMaterial()]; // must not be emissive object
+																	 //return Vector3f(obj_material->getT(), obj_material->getT(), obj_material->getT());
+		DrawObject* recursion_object;
+		Vector3f mirroring;
+		Vector3f refracted;
+		float cmp;
+		float light_dst;
+		int occluder;
+		float recurs_distance;
+
+		Vector3f color(0, 0, 0);
+
+		Vertex hit = (ray.origin) + ((ray.direction) * dist);
+		Vertex normal = scene_triangles_array[ object ].getNormal(hit);
+		//return normal;
+		normal.normalizeThis();
+
+
+
+
+
+		// LIGHTS
+		for (int i = 0; i < lights_len; i++)
+		{
+			find_struct shadow_data;
+			Vertex dir_to_light = lights[i].GetPosition() - hit;
+
+			RayLinear shadowRay(hit.getX(), hit.getY(), hit.getZ(), lights[i].GetPosition().getX(), lights[i].GetPosition().getY(), lights[i].GetPosition().getZ());
+
+			
+			shadow_data = FindKDIntersection(shadowRay);
+
+			light_dst = sqrt(dir_to_light.getX()*dir_to_light.getX() + dir_to_light.getY()*dir_to_light.getY() + dir_to_light.getZ()*dir_to_light.getZ());
+
+			//cout << cmp << endl;
+
+			// something's blocking the light
+			if (shadow_data.dist < (light_dst - 0.001f) && shadow_data.dist > 0.001f) {
+				//cout << "shadow!" << endl;
+				continue;
+			}
+
+			float ppower = obj_material.getShine();
+			dir_to_light.normalizeThis();
+
+			float diffuse_dot_product = dotProduct(normal, dir_to_light);
+			Vector3f diffuse = obj_material.GetDiffuse() * (lights[i].GetIntensity()) * max(diffuse_dot_product, 0.0f);
+			Vector3f specular = obj_material.GetSpecular() * (lights[i].GetIntensity()) * pow(max(dotProduct(reflected(normal, dir_to_light), (ray.direction)), 0.0f), ppower);
+
+			color = color + diffuse + specular;
+		}
+
+
+
+
+
+
+		// for DPG there is no need for mirror rays
+		return color;
+
+		
 	}
 
 	vector<Triangle*> scene_triangles;
-private:
-	vector<DrawObject*> scene_primitives;
-	vector<DrawObject*> scene_emissives;
 	vector<PointLight*> scene_lights;
+private:
+	vector<Triangle*> scene_primitives;
+	vector<Triangle*> scene_emissives;
 };
 
 
@@ -1133,7 +1521,26 @@ void sglLinearize() {
 		scene_triangles_array[i] = *scene->scene_triangles[i];
 	}
 
-	cout << "Linearization ended" << endl;
+	cout << "Linearization of triangles ended" << endl;
+
+	materials = new Material[ used_materials.size() ];
+
+	for (size_t i = 0; i < used_materials.size(); i++)
+	{
+		materials[i] = *used_materials[i];
+	}
+
+	cout << "Linearization of materials ended" << endl;
+
+	lights = new PointLight[scene->scene_lights.size()];
+	lights_len = scene->scene_lights.size();
+
+	for (size_t i = 0; i < scene->scene_lights.size(); i++)
+	{
+		lights[i] = *scene->scene_lights[i];
+	}
+
+	cout << "Linearization of lights ended" << endl;
 }
 
 void sglVertex4f(float x, float y, float z, float w) {
@@ -1743,6 +2150,7 @@ void sglMaterial(const float r,
 	if (used_material)
 		delete used_material;
 	used_material = new Material(r, g, b, kd, ks, shine, T, ior);
+	used_materials.push_back(used_material);
 }
 
 void sglPointLight(const float x,
@@ -1780,13 +2188,17 @@ void sglBuildKdTree() {
 
 	kd_tree = kd_scene->linearizeTree();
 
+	V = *kd_scene->getVoxel();
 }
 
 void sglRayTraceScene() {
 	DrawObject* draw_obj;
 	//DrawObject *jedna, *druhy;
+	int max = active_context->GetWidth()*active_context->GetHeight();
+	Ray *rays = new Ray[max];
 
 	//kd_scene->printOutTree();
+
 
 	depth_test_enabled = false;
 
@@ -1816,10 +2228,11 @@ void sglRayTraceScene() {
 	float ray_start[4] = { 0, 0, 0, 1 };
 	MultVector(ray_start, inv_modelview_matrix);
 
-	for (float y = 0; y < active_context->GetHeight(); y++){
+	/*for (float y = 0; y < active_context->GetHeight(); y++){
 		for (float x = 0; x < active_context->GetWidth(); x++)
 		{
-			float dist;
+			int index = x + active_context->GetWidth()*y;
+			//float dist;
 			float ray_end[4] = { x, y, -1, 1 };
 			MultVector(ray_end, inv_matrix);
 
@@ -1827,7 +2240,9 @@ void sglRayTraceScene() {
 				ray_end[i] = ray_end[i] / ray_end[3];
 			}
 
-			Ray r(ray_start[0], ray_start[1], ray_start[2], ray_end[0], ray_end[1], ray_end[2]);
+			rays[index].adjust(ray_start[0], ray_start[1], ray_start[2], ray_end[0], ray_end[1], ray_end[2]);*/
+
+			//Ray r(ray_start[0], ray_start[1], ray_start[2], ray_end[0], ray_end[1], ray_end[2]);
 			/*if (x == 650 && y == 400) {
 				kd_scene->FindKDIntersection(r, dist);
 				draw_r = 1.0;
@@ -1835,7 +2250,7 @@ void sglRayTraceScene() {
 				draw_b = 0.0;
 				setPixel(x, y, 1);
 				continue;
-			} else*/ {
+			} else {*/
 			
 			/*if (jedna || druhy) {
 				cout << "--------" << endl;
@@ -1845,13 +2260,15 @@ void sglRayTraceScene() {
 			}*/
 
 			 //draw_obj = scene->FindIntersection(r, dist);
-			 draw_obj = kd_scene->FindKDIntersection(r, dist, scene_triangles_array);
+			 //draw_obj = kd_scene->FindKDIntersection(r, dist, scene_triangles_array);
 
 			//if (draw_obj) cout << draw_obj << endl;
-			}
+			/*}
+
+
 
 			if (draw_obj) {
-				Vector3f color = scene->Illuminate(draw_obj, r, dist, 0);
+				//Vector3f color = scene->Illuminate(draw_obj, r, dist, 0);
 				draw_r = color.x; 
 				draw_g = color.y;
 				draw_b = color.z;
@@ -1865,7 +2282,19 @@ void sglRayTraceScene() {
 					draw_b = color.z;
 					setPixel(int(x), int(y), 1);
 				}
-			}
+			}*/
+		/*}
+	}*/
+
+	for (float y = 0; y < active_context->GetHeight(); y++) {
+		for (float x = 0; x < active_context->GetWidth(); x++)
+		{
+			int index = x + active_context->GetWidth()*y;
+			Vector3f color = scene->Illuminate(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index);
+			draw_r = color.x;
+			draw_g = color.y;
+			draw_b = color.z;
+			setPixel(int(x), int(y), 1);
 		}
 	}
 
@@ -1889,7 +2318,7 @@ void sglEnvironmentMap(const int width,
 	env_texels = texels;
 }
 
-void sglEmissiveMaterial(
+/*void sglEmissiveMaterial(
 	const float r,
 	const float g,
 	const float b,
@@ -1903,4 +2332,4 @@ void sglEmissiveMaterial(
 	if (used_material)
 		delete used_material;
 	used_material = new MaterialEmissive(r, g, b, c0, c1, c2);
-}
+}*/

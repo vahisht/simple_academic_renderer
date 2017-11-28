@@ -92,6 +92,7 @@ class Vector3f
 public:
 	Vector3f() { x = 0; y = 0; z = 0; };
 	Vector3f(Vertex* old) { x = old->getX(); y = old->getY(); z = old->getZ(); };
+	Vector3f(Vertex old) { x = old.getX(); y = old.getY(); z = old.getZ(); };
 	Vector3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {};
 	Vector3f operator-(Vector3f v2) { return Vector3f(x - v2.x, y - v2.y, z - v2.z); }
 	Vector3f operator-(Vertex* v2) { return Vector3f(x - v2->getX(), y - v2->getY(), z - v2->getZ()); }
@@ -343,6 +344,11 @@ private:
 class Ray
 {
 public:
+	Ray() {
+		origin = NULL;
+		direction = NULL;
+	}
+
 	Ray(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
 		origin = new Vertex(x_start, y_start, z_start, 1);
 		direction = new Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
@@ -354,8 +360,8 @@ public:
 	}
 
 	void adjust(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
-		delete origin;
-		delete direction;
+		if (origin) delete origin;
+		if (direction) delete direction;
 		origin = new Vertex(x_start, y_start, z_start, 1);
 		direction = new Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
 		direction->normalizeThis();
@@ -363,6 +369,30 @@ public:
 
 	Vertex* origin;
 	Vertex* direction;
+};
+
+class RayLinear
+{
+public:
+	RayLinear() {
+	}
+
+	RayLinear(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
+		origin = Vertex(x_start, y_start, z_start, 1);
+		direction = Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
+		direction.normalizeThis();
+	}
+	~RayLinear() {
+	}
+
+	void adjust(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
+		origin = Vertex(x_start, y_start, z_start, 1);
+		direction = Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
+		direction.normalizeThis();
+	}
+
+	Vertex origin;
+	Vertex direction;
 };
 
 class MaterialBase
@@ -377,18 +407,20 @@ private:
 	bool emissive_material;
 };
 
-class Material : public MaterialBase
+class Material
 {
 public:
+	Material() {};
 	Material(float _r, float _g, float _b, float _kd, float _ks, float _shine, float _T, float _ior)
-		:MaterialBase(false), r(_r), g(_g), b(_b), kd(_kd), ks(_ks), shine(_shine), T(_T), ior(_ior) {}
-	virtual ~Material() {}
+		:r(_r), g(_g), b(_b), kd(_kd), ks(_ks), shine(_shine), T(_T), ior(_ior) {}
+	~Material() {}
 	Vector3f GetDiffuse() { return Vector3f(r*kd, g*kd, b*kd); }
 	Vector3f GetSpecular() { return Vector3f(ks, ks, ks); }
 	float getShine() { return this->shine; }
 	float getT() { return this->T; }
 	float getIor() { return this->ior; }
 	Material * DeepCopy() { return new Material(r, g, b, kd, ks, shine, T, ior); }
+	bool Emissive() { return false; }
 private:
 	float r, g, b;	// color
 	float kd;		// diffuse coef.
@@ -462,13 +494,14 @@ private:
 	float radius;
 };
 
-class Triangle : public DrawObject
+class Triangle
 {
 public:
 	Triangle() {
 		this->vertices = NULL;
 	}
-	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, MaterialBase* _used_material) :DrawObject("Triangle", _used_material), object_type(_object_type), vertices(_vertices) {
+	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material) {
+
 		vertices_linear = new Vertex[3];
 
 		vertices_linear[0] = *_vertices->at(0);
@@ -485,13 +518,14 @@ public:
 
 		cout << "NULL" << endl;
 
-		this->normal = *(new Vector3f(
+		this->normal = *(new Vertex(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
 			(u.getZ()*v.getX() - u.getX()*v.getZ()),
-			(u.getX()*v.getY() - u.getY()*v.getX())));
-		this->normal.Normalize();
+			(u.getX()*v.getY() - u.getY()*v.getX()),
+			1.0f));
+		this->normal.normalizeThis();
 	}
-	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, MaterialBase* _used_material) :DrawObject("Triangle", _used_material), object_type(_object_type), vertices(_vertices), normals(_normals) {
+	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material), normals(_normals) {
 		vertices_linear = new Vertex[3];
 
 		vertices_linear[0] = *_vertices->at(0);
@@ -507,18 +541,23 @@ public:
 
 		//cout << this->normals->size() << endl;
 
+	
+		this->normals_linear = new Vertex[normals->size()];
+
 		for (int i = 0; i < normals->size(); i++)
 		{
 			normals->at(i)->normalizeThis();
+			this->normals_linear[i] = *normals->at(i);
 		}
 
-		this->normal = *(new Vector3f(
+		this->normal = *(new Vertex(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
 			(u.getZ()*v.getX() - u.getX()*v.getZ()),
-			(u.getX()*v.getY() - u.getY()*v.getX())));
-		this->normal.Normalize();
+			(u.getX()*v.getY() - u.getY()*v.getX()),
+			1.0f));
+		this->normal.normalizeThis();
 	}
-	virtual ~Triangle() {
+	~Triangle() {
 		//if (this->vertices == NULL) return;
 		//cout << "Destructor called for " << this << endl;
 		/*for (vector<Vertex*>::iterator it = vertices->begin(); it != vertices->end(); ++it)
@@ -536,7 +575,7 @@ public:
 		cout << "(" << this->vertices_linear[1].getX() << "," << this->vertices_linear[1].getY() << "," << this->vertices_linear[1].getZ() << ") ";
 		cout << "(" << this->vertices_linear[2].getX() << "," << this->vertices_linear[2].getY() << "," << this->vertices_linear[2].getZ() << ")" << endl;
 	}
-	virtual Vector3f getNormal(Vertex hit) {
+	Vertex getNormal(Vertex hit) {
 		//cout << this->normals->size() << endl;
 		//return *this->normal; // DEBUG
 		if (this->normals == NULL) return this->normal;
@@ -561,9 +600,70 @@ public:
 		bary[1] = (d00 * d21 - d01 * d20) / denom;
 		bary[2] = 1.0f - bary[0] - bary[1];
 
-		return (Vector3f(&(*this->normals->at(0) * bary[0] + *this->normals->at(1) * bary[2] + *this->normals->at(2) * bary[1])));
+		return ( this->normals_linear[0] * bary[0] + this->normals_linear[1] * bary[2] + this->normals_linear[2] * bary[1]);
 	}
-	virtual bool FindIntersection(Ray &ray, float &tHit, bool unCull = false) {
+	bool FindIntersection(RayLinear &ray, float &tHit, bool unCull = false) {
+
+		float SMALL_NUM = 0.000000001f;
+		float		r, a, b;              // params to calc ray-plane intersect
+
+										  //cout << ray.direction->getX() << "-" << ray.direction->getY() << "-" << ray.direction->getZ() << ", test:" << this << endl;
+
+		float angle = dotProduct(normal, ray.direction);
+		if (!unCull && angle > 0)
+			return false; // behind ray start
+
+						  // get triangle edge vectors and plane normal
+		Vertex u = vertices_linear[1] - vertices_linear[0];
+		Vertex v = vertices_linear[2] - vertices_linear[0];
+		Vertex n = Vertex(this->normal.getX(), this->normal.getY(), this->normal.getZ(), 1.0f); // cross product
+																				 //if (n == (Vector)0)			// triangle is degenerate
+																				 //	return -1;					// do not deal with this case
+
+																				 //dir = R.P1 - R.P0;			// ray direction vector
+		Vertex w0 = ray.origin - vertices_linear[0];
+		a = (-1)*(Vertex::DotProduct(n, w0));
+		b = Vertex::DotProduct(n, ray.direction);
+		if (fabs(b) < SMALL_NUM) {		// ray is  parallel to triangle plane
+			return false;				// ray disjoint from plane
+		}
+
+		// get intersect point of ray with triangle plane
+		r = a / b;
+		if (r < 0.02)                    // ray goes away from triangle
+			return false;				// => no intersect
+										// for a segment, also test if (r > 1.0) => no intersect
+
+		Vertex I = ray.origin + (ray.direction)*r;            // intersect point of ray and plane
+																//if (debug) cout << I.getX() << " " << I.getY() << " " << I.getZ() << endl;
+
+																// is I inside T?
+		float    uu, uv, vv, wu, wv, D;
+		uu = Vertex::DotProduct(u, u);
+		uv = Vertex::DotProduct(u, v);
+		vv = Vertex::DotProduct(v, v);
+		Vertex w = I - vertices_linear[0];
+		wu = Vertex::DotProduct(w, u);
+		wv = Vertex::DotProduct(w, v);
+		D = uv * uv - uu * vv;
+
+		// get and test parametric coords
+		float s, t;
+		s = (uv * wv - vv * wu) / D;
+		if (s < 0.0 || s > 1.0)         // I is outside T
+			return 0;
+		t = (uv * wu - uu * wv) / D;
+		if (t < 0.0 || (s + t) > 1.0)  // I is outside T
+			return 0;
+
+		I = I - ray.origin; // Z I udelam pouze vektor od zacatku k bodu pruniku pro vypocitani vzdalenosti
+		tHit = sqrt((I.getX() * I.getX()) + (I.getY()* I.getY()) + (I.getZ() * I.getZ()));
+
+		return 1;                       // I is in T
+
+
+	}
+	bool FindIntersection(Ray &ray, float &tHit, bool unCull = false) {
 
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
@@ -577,7 +677,7 @@ public:
 						  // get triangle edge vectors and plane normal
 		Vertex u = vertices_linear[1] - vertices_linear[0];
 		Vertex v = vertices_linear[2] - vertices_linear[0];
-		Vertex n = Vertex(this->normal.x, this->normal.y, this->normal.z, 1.0f); // cross product
+		Vertex n = Vertex(this->normal.getX(), this->normal.getY(), this->normal.getZ(), 1.0f); // cross product
 																				 //if (n == (Vector)0)			// triangle is degenerate
 																				 //	return -1;					// do not deal with this case
 
@@ -656,13 +756,16 @@ public:
 
 	vector<Vertex*>* getVertices() { return this->vertices; }
 
+	int GetMaterial() { return this->material; };
+
 private:
-	Vector3f normal;
+	Vertex normal;
 	sglEElementType object_type;
 	vector<Vertex*>* vertices;
 	Vertex *vertices_linear = NULL;
 	vector<Vertex*>* normals = NULL;
 	Vertex *normals_linear = NULL;
+	int material = -1;
 
 };
 
