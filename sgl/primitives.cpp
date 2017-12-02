@@ -19,3 +19,8 @@ bool EdgeSort(Edge e1, Edge e2) {
 bool PairSort(pair<float, float> p1, pair<float, float> p2) {
 	return (p1.first < p2.first);
 } 
+
+Vector3f reflected(Vector3f normal, Vertex to_light) {
+	//Vertex light = to_light.normalize();
+	return ((normal * 2 * (dotProduct(normal, to_light))) - to_light)*(-1);
+}

@@ -19,6 +19,9 @@
     <ClCompile Include="include\hdrloader.cpp">
       <Filter>Original</Filter>
     </ClCompile>
+    <ClCompile Include="sgl\gpu_sgl.cu">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sgl\sgl.h">
@@ -38,6 +41,9 @@
     </ClInclude>
     <ClInclude Include="include\nffwrite.h">
       <Filter>Original</Filter>
+    </ClInclude>
+    <ClInclude Include="sgl\gpu_sgl.cuh">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

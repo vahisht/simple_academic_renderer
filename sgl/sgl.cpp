@@ -71,37 +71,18 @@ Material* materials;
 kdNodeLinear* kd_tree;
 Voxel V;
 int lights_len = 0;
+//GPU_render render;
 
 // ==========================================================================
 //  Ray-tracer
 // ==========================================================================
 
 
-class PointLight
-{
-public:
-	PointLight() {
-	}
-	PointLight(float x, float y, float z, float _r, float _g, float _b)	{
-		position = *new Vertex(x, y, z, 1);
-		intensity = *new Vector3f(_r, _g, _b);
-	}
-	~PointLight() {
-	}
-	Vertex GetPosition()	{ return position; }
-	Vector3f GetIntensity(){ return intensity; }
-private:
-	Vertex position;
-	Vector3f intensity;
-	float r, g, b; // intensity
-};
+
 
 PointLight* lights;
 
-Vector3f reflected(Vector3f normal, Vertex to_light) {
-	//Vertex light = to_light.normalize();
-	return ((normal * 2 * (dotProduct(normal, to_light))) - to_light)*(-1);
-}
+
 void getEnvPixel(float x, float y, float* triplet) {
 	int tex_x, tex_y;
 
@@ -385,19 +366,13 @@ public:
 		return color;
 	}*/
 
-struct find_struct {
-
-	int object;
-	float dist;
-
-};
 
 find_struct FindKDIntersection(RayLinear ray) {
 	find_struct result;
 	stack<traversal_structure_linear> stacktrav;
 	traversal_structure_linear actual;
 	bool found = false;
-	
+
 	result.dist = numeric_limits<float>::max();
 	result.object = -1;
 
@@ -528,7 +503,7 @@ find_struct FindKDIntersection(RayLinear ray) {
 
 	} //while stack not empty
 
-	
+
 	return result;
 }
 
@@ -2193,14 +2168,8 @@ void sglBuildKdTree() {
 
 void sglRayTraceScene() {
 	DrawObject* draw_obj;
-	//DrawObject *jedna, *druhy;
 	int max = active_context->GetWidth()*active_context->GetHeight();
 	Ray *rays = new Ray[max];
-
-	//kd_scene->printOutTree();
-
-
-	depth_test_enabled = false;
 
 	float inv_matrix[16] = {
 		1, 0, 0, 0,
@@ -2221,89 +2190,21 @@ void sglRayTraceScene() {
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1
-	};	// invert matrix from ray position
+	};
 	MultMatrix(inv_modelview_matrix, modelViewStack->GetCurrent());
 	InvertMatrix(inv_modelview_matrix);
 
 	float ray_start[4] = { 0, 0, 0, 1 };
 	MultVector(ray_start, inv_modelview_matrix);
 
-	/*for (float y = 0; y < active_context->GetHeight(); y++){
-		for (float x = 0; x < active_context->GetWidth(); x++)
-		{
-			int index = x + active_context->GetWidth()*y;
-			//float dist;
-			float ray_end[4] = { x, y, -1, 1 };
-			MultVector(ray_end, inv_matrix);
-
-			for (size_t i = 0; i < 3; i++) {
-				ray_end[i] = ray_end[i] / ray_end[3];
-			}
-
-			rays[index].adjust(ray_start[0], ray_start[1], ray_start[2], ray_end[0], ray_end[1], ray_end[2]);*/
-
-			//Ray r(ray_start[0], ray_start[1], ray_start[2], ray_end[0], ray_end[1], ray_end[2]);
-			/*if (x == 650 && y == 400) {
-				kd_scene->FindKDIntersection(r, dist);
-				draw_r = 1.0;
-				draw_g = 0.0;
-				draw_b = 0.0;
-				setPixel(x, y, 1);
-				continue;
-			} else {*/
-			
-			/*if (jedna || druhy) {
-				cout << "--------" << endl;
-				cout << r.direction->getX() << "-" << r.direction->getY() << "-" << r.direction->getZ() << endl;
-				cout << "Normal: " << jedna << endl;
-				cout << "kd: " << druhy << endl;
-			}*/
-
-			 //draw_obj = scene->FindIntersection(r, dist);
-			 //draw_obj = kd_scene->FindKDIntersection(r, dist, scene_triangles_array);
-
-			//if (draw_obj) cout << draw_obj << endl;
-			/*}
-
-
-
-			if (draw_obj) {
-				//Vector3f color = scene->Illuminate(draw_obj, r, dist, 0);
-				draw_r = color.x; 
-				draw_g = color.y;
-				draw_b = color.z;
-				setPixel(int(x), int(y), 1);
-			}
-			else {
-				if (env_texels) {
-					Vector3f color = setEnvMapColor(r.direction->getX(), r.direction->getY(), r.direction->getZ());
-					draw_r = color.x;
-					draw_g = color.y;
-					draw_b = color.z;
-					setPixel(int(x), int(y), 1);
-				}
-			}*/
-		/*}
-	}*/
 
 	for (float y = 0; y < active_context->GetHeight(); y++) {
 		for (float x = 0; x < active_context->GetWidth(); x++)
 		{
 			int index = x + active_context->GetWidth()*y;
-			Vector3f color = scene->Illuminate(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index);
-			draw_r = color.x;
-			draw_g = color.y;
-			draw_b = color.z;
-			setPixel(int(x), int(y), 1);
+			IlluminateKernel(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index, V, kd_tree, scene_triangles_array, materials, lights, lights_len, sglGetColorBufferPointer());
 		}
 	}
-
-	/*cout << "Total rays: " << rays << endl;
-	cout << "Total trav. steps: " << trav_steps << endl;
-	cout << "Total inters. queries: " << inters_steps << endl;
-	cout << "Average trav. steps: " << float(trav_steps)/float(rays) << endl;
-	cout << "Average inters. queries: " << float(inters_steps) / float(rays) << endl;*/
-
 
 }
 

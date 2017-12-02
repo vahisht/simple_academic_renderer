@@ -769,3 +769,23 @@ private:
 
 };
 
+class PointLight
+{
+public:
+	PointLight() {
+	}
+	PointLight(float x, float y, float z, float _r, float _g, float _b) {
+		position = *new Vertex(x, y, z, 1);
+		intensity = *new Vector3f(_r, _g, _b);
+	}
+	~PointLight() {
+	}
+	Vertex GetPosition() { return position; }
+	Vector3f GetIntensity() { return intensity; }
+private:
+	Vertex position;
+	Vector3f intensity;
+	float r, g, b; // intensity
+};
+
+Vector3f reflected(Vector3f normal, Vertex to_light);
