@@ -202,9 +202,13 @@
   <ItemGroup>
     <ClCompile Include="include\hdrloader.cpp" />
     <ClCompile Include="include\nffread.cpp" />
-    <ClCompile Include="sgl\gpu_sgl.cu" />
+    <CudaCompile Include="sgl\gpu_sgl.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
     <ClCompile Include="sgl\kd_tree.cpp" />
-    <ClCompile Include="sgl\primitives.cpp" />
+    <CudaCompile Include="sgl\primitives.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="sgl\sgl.cpp" />
     <ClCompile Include="renderer.cpp" />
   </ItemGroup>
@@ -214,7 +218,7 @@
     <ClInclude Include="include\nffwrite.h" />
     <ClInclude Include="sgl\gpu_sgl.cuh" />
     <ClInclude Include="sgl\kd_tree.h" />
-    <ClInclude Include="sgl\primitives.h" />
+    <ClInclude Include="sgl\primitives.cuh" />
     <ClInclude Include="sgl\sgl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

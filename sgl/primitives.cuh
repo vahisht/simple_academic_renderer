@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <stack>
 
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 #define NULL 0
 
@@ -51,62 +53,62 @@ enum sglEElementType {
 class Vertex
 {
 public:
-	Vertex() { x = 0; y = 0; z = 0; };
-	Vertex(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {};
-	float getX() { return x; }
-	float getY() { return y; }
-	float getZ() { return z; }
-	float getW() { return w; }
-	Vertex normalize() {
+	__host__ __device__ Vertex() { x = 0; y = 0; z = 0; };
+	__host__ __device__ Vertex(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {};
+	__host__ __device__ float getX() { return x; }
+	__host__ __device__ float getY() { return y; }
+	__host__ __device__ float getZ() { return z; }
+	__host__ __device__ float getW() { return w; }
+	__host__ __device__ Vertex normalize() {
 		float length = sqrt(x*x + y*y + z*z);
 		return Vertex(x / length, y / length, z / length, 1);
 	}
-	void divideByW() {
+	__host__ __device__ void divideByW() {
 		x = x / w;
 		y = y / w;
 		z = z / w;
 	}
-	void normalizeThis() {
+	__host__ __device__ void normalizeThis() {
 		float length = sqrt(x*x + y*y + z*z);
 
 		this->x = this->x / length;
 		this->y = this->y / length;
 		this->z = this->z / length;
 	}
-	Vertex operator-(Vertex v2) { return Vertex(x - v2.getX(), y - v2.getY(), z - v2.getZ(), 1); }
-	Vertex operator+(Vertex v2) { return Vertex(x + v2.getX(), y + v2.getY(), z + v2.getZ(), 1); }
-	Vertex operator*(float v) { return Vertex(v*x, v*y, v*z, 1); }
-	static float DotProduct(Vertex & v1, Vertex v2) { return (v1.getX()*v2.getX() + v1.getY()*v2.getY() + v1.getZ()*v2.getZ()); }
-	static float Distance(Vertex v1, Vertex v2) {
+	__host__ __device__ Vertex operator-(Vertex v2) { return Vertex(x - v2.getX(), y - v2.getY(), z - v2.getZ(), 1); }
+	__host__ __device__ Vertex operator+(Vertex v2) { return Vertex(x + v2.getX(), y + v2.getY(), z + v2.getZ(), 1); }
+	__host__ __device__ Vertex operator*(float v) { return Vertex(v*x, v*y, v*z, 1); }
+	__host__ __device__ static float DotProduct(Vertex & v1, Vertex v2) { return (v1.getX()*v2.getX() + v1.getY()*v2.getY() + v1.getZ()*v2.getZ()); }
+	__host__ __device__ static float Distance(Vertex v1, Vertex v2) {
 		float x = v2.getX() - v1.getX();
 		float y = v2.getY() - v1.getY();
 		float z = v2.getZ() - v1.getZ();
 		return sqrtf(x*x + y*y + z*z);
 	}
-private:
 	float x, y, z, w;
+private:
 };
 
 class Vector3f
 {
 public:
-	Vector3f() { x = 0; y = 0; z = 0; };
-	Vector3f(Vertex* old) { x = old->getX(); y = old->getY(); z = old->getZ(); };
-	Vector3f(Vertex old) { x = old.getX(); y = old.getY(); z = old.getZ(); };
-	Vector3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {};
-	Vector3f operator-(Vector3f v2) { return Vector3f(x - v2.x, y - v2.y, z - v2.z); }
-	Vector3f operator-(Vertex* v2) { return Vector3f(x - v2->getX(), y - v2->getY(), z - v2->getZ()); }
-	Vector3f operator-(Vertex v2) { return Vector3f(x - v2.getX(), y - v2.getY(), z - v2.getZ()); }
-	Vector3f operator+(Vertex v2) { return Vector3f(x + v2.getX(), y + v2.getY(), z + v2.getZ()); }
-	Vector3f operator+(Vector3f v2) { return Vector3f(x + v2.x, y + v2.y, z + v2.z); }
-	Vector3f operator*(float v) { return Vector3f(v*x, v*y, v*z); }
-	Vector3f operator*(Vertex v2) { return Vector3f(x * v2.getX(), y * v2.getY(), z * v2.getZ()); }
-	Vector3f operator*(Vector3f v2) { return Vector3f(x * v2.x, y * v2.y, z * v2.z); }
-	Vector3f operator/(float v) { return Vector3f(v / x, v / y, v / z); }
-	void operator=(Vertex v2) { x = v2.getX(); y = v2.getY(); z = v2.getZ(); }
-	void operator=(Vector3f v2) { x = v2.x; y = v2.y; z = v2.z; }
-	static float DotProduct(Vector3f & v1, Vector3f & v2) { return (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z); }
-	void Normalize() {
+	__host__ __device__ Vector3f() { x = 0; y = 0; z = 0; };
+	__host__ __device__ Vector3f(Vertex* old) { x = old->getX(); y = old->getY(); z = old->getZ(); };
+	__host__ __device__ Vector3f(Vertex old) { x = old.getX(); y = old.getY(); z = old.getZ(); };
+	__host__ __device__ Vector3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {};
+	__host__ __device__ Vector3f operator-(Vector3f v2) { return Vector3f(x - v2.x, y - v2.y, z - v2.z); }
+	__host__ __device__ Vector3f operator-(Vertex* v2) { return Vector3f(x - v2->getX(), y - v2->getY(), z - v2->getZ()); }
+	__host__ __device__ Vector3f operator-(Vertex v2) { return Vector3f(x - v2.getX(), y - v2.getY(), z - v2.getZ()); }
+	__host__ __device__ Vector3f operator+(Vertex v2) { return Vector3f(x + v2.getX(), y + v2.getY(), z + v2.getZ()); }
+	__host__ __device__ Vector3f operator+(Vector3f v2) { return Vector3f(x + v2.x, y + v2.y, z + v2.z); }
+	__host__ __device__ Vector3f operator*(float v) { return Vector3f(v*x, v*y, v*z); }
+	__host__ __device__ Vector3f operator*(Vertex v2) { return Vector3f(x * v2.getX(), y * v2.getY(), z * v2.getZ()); }
+	__host__ __device__ Vector3f operator*(Vector3f v2) { return Vector3f(x * v2.x, y * v2.y, z * v2.z); }
+	__host__ __device__ Vector3f operator/(float v) { return Vector3f(v / x, v / y, v / z); }
+	__host__ __device__ void operator=(Vertex v2) { x = v2.getX(); y = v2.getY(); z = v2.getZ(); }
+	__host__ __device__ void operator=(Vector3f v2) { x = v2.x; y = v2.y; z = v2.z; }
+	__host__ __device__ static float DotProduct(Vector3f & v1, Vector3f & v2) { return (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z); }
+	__host__ __device__ void Normalize() {
 		float length = sqrt(Vector3f::DotProduct(*this, *this));
 		if (length != 0) {
 			x /= length;
@@ -118,9 +120,9 @@ public:
 };
 
 
-float dotProduct(Vector3f a, Vertex b);
+__host__ __device__ float dotProduct(Vector3f a, Vertex b);
 
-float dotProduct(Vertex a, Vertex b);
+__host__ __device__ float dotProduct(Vertex a, Vertex b);
 
 class Edge {
 public:
@@ -371,29 +373,6 @@ public:
 	Vertex* direction;
 };
 
-class RayLinear
-{
-public:
-	RayLinear() {
-	}
-
-	RayLinear(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
-		origin = Vertex(x_start, y_start, z_start, 1);
-		direction = Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
-		direction.normalizeThis();
-	}
-	~RayLinear() {
-	}
-
-	void adjust(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
-		origin = Vertex(x_start, y_start, z_start, 1);
-		direction = Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
-		direction.normalizeThis();
-	}
-
-	Vertex origin;
-	Vertex direction;
-};
 
 class MaterialBase
 {
@@ -410,17 +389,17 @@ private:
 class Material
 {
 public:
-	Material() {};
-	Material(float _r, float _g, float _b, float _kd, float _ks, float _shine, float _T, float _ior)
+	__host__ __device__ Material() {};
+	__host__ __device__ Material(float _r, float _g, float _b, float _kd, float _ks, float _shine, float _T, float _ior)
 		:r(_r), g(_g), b(_b), kd(_kd), ks(_ks), shine(_shine), T(_T), ior(_ior) {}
-	~Material() {}
-	Vector3f GetDiffuse() { return Vector3f(r*kd, g*kd, b*kd); }
-	Vector3f GetSpecular() { return Vector3f(ks, ks, ks); }
-	float getShine() { return this->shine; }
-	float getT() { return this->T; }
-	float getIor() { return this->ior; }
-	Material * DeepCopy() { return new Material(r, g, b, kd, ks, shine, T, ior); }
-	bool Emissive() { return false; }
+	__host__ __device__ ~Material() {}
+	__host__ __device__ Vector3f GetDiffuse() { return Vector3f(r*kd, g*kd, b*kd); }
+	__host__ __device__ Vector3f GetSpecular() { return Vector3f(ks, ks, ks); }
+	__host__ __device__ float getShine() { return this->shine; }
+	__host__ __device__ float getT() { return this->T; }
+	__host__ __device__ float getIor() { return this->ior; }
+	__host__ __device__ Material * DeepCopy() { return new Material(r, g, b, kd, ks, shine, T, ior); }
+	__host__ __device__ bool Emissive() { return false; }
 private:
 	float r, g, b;	// color
 	float kd;		// diffuse coef.
@@ -494,13 +473,37 @@ private:
 	float radius;
 };
 
+class RayLinear
+{
+public:
+	__host__ __device__ RayLinear() {
+	}
+
+	__host__ __device__ RayLinear(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
+		origin = Vertex(x_start, y_start, z_start, 1);
+		direction = Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
+		direction.normalizeThis();
+	}
+
+	__host__ __device__ void adjust(float x_start, float y_start, float z_start, float x_end, float y_end, float z_end) {
+		origin = Vertex(x_start, y_start, z_start, 1);
+		direction = Vertex(x_end - x_start, y_end - y_start, z_end - z_start, 1);
+		direction.normalizeThis();
+	}
+
+	__host__ __device__ ~RayLinear() {}
+
+	Vertex origin;
+	Vertex direction;
+};
+
 class Triangle
 {
 public:
-	Triangle() {
+	__host__ __device__ Triangle() {
 		this->vertices = NULL;
 	}
-	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material) {
+	__host__ __device__ Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material) {
 
 		vertices_linear = new Vertex[3];
 
@@ -525,7 +528,7 @@ public:
 			1.0f));
 		this->normal.normalizeThis();
 	}
-	Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material), normals(_normals) {
+	__host__ __device__ Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material), normals(_normals) {
 		vertices_linear = new Vertex[3];
 
 		vertices_linear[0] = *_vertices->at(0);
@@ -557,7 +560,7 @@ public:
 			1.0f));
 		this->normal.normalizeThis();
 	}
-	~Triangle() {
+	__host__ __device__ ~Triangle() {
 		//if (this->vertices == NULL) return;
 		//cout << "Destructor called for " << this << endl;
 		/*for (vector<Vertex*>::iterator it = vertices->begin(); it != vertices->end(); ++it)
@@ -567,15 +570,15 @@ public:
 		if (normals) delete normals;
 		//delete normal;
 	}
-	void normals_print() {
+	__host__ __device__ void normals_print() {
 		cout << this->normals->size() << endl;
 	}
-	void print() {
+	__host__ __device__ void print() {
 		cout << "(" << this->vertices_linear[0].getX() << "," << this->vertices_linear[0].getY() << "," << this->vertices_linear[0].getZ() << ") ";
 		cout << "(" << this->vertices_linear[1].getX() << "," << this->vertices_linear[1].getY() << "," << this->vertices_linear[1].getZ() << ") ";
 		cout << "(" << this->vertices_linear[2].getX() << "," << this->vertices_linear[2].getY() << "," << this->vertices_linear[2].getZ() << ")" << endl;
 	}
-	Vertex getNormal(Vertex hit) {
+	__host__ __device__ Vertex getNormal(Vertex hit) {
 		//cout << this->normals->size() << endl;
 		//return *this->normal; // DEBUG
 		if (this->normals == NULL) return this->normal;
@@ -602,7 +605,7 @@ public:
 
 		return ( this->normals_linear[0] * bary[0] + this->normals_linear[1] * bary[2] + this->normals_linear[2] * bary[1]);
 	}
-	bool FindIntersection(RayLinear &ray, float &tHit, bool unCull = false) {
+	__host__ __device__ bool FindIntersection(RayLinear &ray, float &tHit, bool unCull = false) {
 
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
@@ -663,7 +666,7 @@ public:
 
 
 	}
-	bool FindIntersection(Ray &ray, float &tHit, bool unCull = false) {
+	__host__ __device__ bool FindIntersection(Ray &ray, float &tHit, bool unCull = false) {
 
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
@@ -724,7 +727,7 @@ public:
 
 
 	}
-	Vertex randomSample() {
+	__host__ __device__ Vertex randomSample() {
 		// uniform random point in triangle
 		float r1 = (double)rand() / (RAND_MAX);
 		float r2 = (double)rand() / (RAND_MAX);
@@ -744,7 +747,7 @@ public:
 		return (vertices_linear[0] + e1*u + e2*v);
 	}
 
-	float areaSize() {
+	__host__ __device__ float areaSize() {
 		float a = Vertex::Distance(vertices_linear[0], vertices_linear[1]);
 		float b = Vertex::Distance(vertices_linear[1], vertices_linear[2]);
 		float c = Vertex::Distance(vertices_linear[2], vertices_linear[0]);
@@ -754,9 +757,11 @@ public:
 		return sqrtf(s*(s - a)*(s - b)*(s - c));
 	}
 
-	vector<Vertex*>* getVertices() { return this->vertices; }
+	__host__ __device__ vector<Vertex*>* getVertices() { return this->vertices; }
 
-	int GetMaterial() { return this->material; };
+	__host__ __device__ int GetMaterial() { return this->material; };
+
+	int material = -1;
 
 private:
 	Vertex normal;
@@ -765,13 +770,11 @@ private:
 	Vertex *vertices_linear = NULL;
 	vector<Vertex*>* normals = NULL;
 	Vertex *normals_linear = NULL;
-	int material = -1;
-
+	
 };
 
-class PointLight
+struct PointLight
 {
-public:
 	PointLight() {
 	}
 	PointLight(float x, float y, float z, float _r, float _g, float _b) {
@@ -780,12 +783,12 @@ public:
 	}
 	~PointLight() {
 	}
-	Vertex GetPosition() { return position; }
-	Vector3f GetIntensity() { return intensity; }
-private:
+	//Vertex GetPosition() { return position; }
+	//Vector3f GetIntensity() { return intensity; }
+
 	Vertex position;
 	Vector3f intensity;
 	float r, g, b; // intensity
 };
 
-Vector3f reflected(Vector3f normal, Vertex to_light);
+__host__ __device__ Vector3f reflected(Vector3f normal, Vertex to_light);

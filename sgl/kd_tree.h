@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "primitives.h"
+#include "primitives.cuh"
 
 #include <cassert>
 #include <limits>
@@ -833,21 +833,6 @@ struct  traversal_structure
 	}
 };
 
-struct  traversal_structure_linear
-{
-	int node;
-	float mint;
-	float maxt;
-
-	traversal_structure_linear() {
-	}
-
-	traversal_structure_linear(int node, float mint, float maxt) {
-		this->node = node;
-		this->mint = mint;
-		this->maxt = maxt;
-	}
-};
 
 class KD_Tree {
 private:
@@ -893,17 +878,34 @@ public:
 		return this->V;
 	}
 
+	int count() { return this->node_count; };
+
 	kdNodeLinear* linearizeTree() {
 		kdNodeLinear* result = new kdNodeLinear[ this->node_count ];
-		cout << "Kd-tree node count: " << this->node_count << endl;
+		//cout << "Kd-tree node count: " << this->node_count << endl;
 		int size = 0;
 
 		linearizeTreeRecursive( result, size, this->root );
 
-		cout << "Max linear Kd-tree index is " << size << endl;
+		//cout << "Max linear Kd-tree index is " << size << endl;
 
 		return result;
 	}
+
+	int depth(kdNode* node) {
+		int left, right;
+
+		left = (node->left == NULL) ? 0 : this->depth( node->left );
+		right = (node->right == NULL) ? 0 : this->depth( node->right );
+
+		left++; right++;
+
+		return max(left, right);
+	}
+
+	int getDepth() {
+		return depth( this->root ) - 1;
+	};
 
 	void doTheBuild(Triangle* T, int size) {
 		this->V = new Voxel();

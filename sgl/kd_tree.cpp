@@ -626,7 +626,7 @@ kdNode* BuildKdTree(Triangle* T_src, int size, int &count) {
 	vector<int >* T = new vector<int>(size, NULL);
 	boundingBox AABB;
 
-	cout << "Build started" << endl;
+	cout << "Build of KD-tree started" << endl;
 
 	// make triangles happen
 	for (int i = 0; i < size; i++)
@@ -634,7 +634,7 @@ kdNode* BuildKdTree(Triangle* T_src, int size, int &count) {
 		T->at(i) = i;
 	}
 
-	cout << "Data structures done" << endl;
+	//cout << "Data structures done" << endl;
 	// create events
 	for (int i = 0; i < size; i++)
 	{

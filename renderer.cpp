@@ -499,9 +499,11 @@ RayTraceAssimpScene(const char *scenename)
 	sgluLookAt(
 		from_x, from_y, from_z, at_x, at_y, at_z, up_x, up_y, up_z );
 
+	cout << endl;
 	sglLinearize();
+	cout << endl;
 	sglBuildKdTree();
-	cout << "KD-tree built" << endl;
+	cout << "KD-tree built" << endl << endl;
 	// compute a ray traced image and store it in the color buffer
 	sglRayTraceScene();
 	cout << "Rendering done" << endl;

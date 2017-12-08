@@ -8,7 +8,7 @@
 #pragma once
 
 
-#include "primitives.h"
+#include "primitives.cuh"
 #include "kd_tree.h"
 
 #include "gpu_sgl.cuh"

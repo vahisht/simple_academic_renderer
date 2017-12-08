@@ -4,13 +4,7 @@
     <ClCompile Include="sgl\sgl.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="sgl\primitives.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="sgl\kd_tree.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="include\nffread.cpp">
@@ -19,15 +13,12 @@
     <ClCompile Include="include\hdrloader.cpp">
       <Filter>Original</Filter>
     </ClCompile>
-    <ClCompile Include="sgl\gpu_sgl.cu">
+    <ClCompile Include="renderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sgl\sgl.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="sgl\primitives.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="sgl\kd_tree.h">
@@ -42,9 +33,6 @@
     <ClInclude Include="include\nffwrite.h">
       <Filter>Original</Filter>
     </ClInclude>
-    <ClInclude Include="sgl\gpu_sgl.cuh">
-      <Filter>Renderer</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Original">
@@ -53,5 +41,19 @@
     <Filter Include="Renderer">
       <UniqueIdentifier>{50539500-4754-4b8c-903f-0dea1b379776}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="sgl\gpu_sgl.cu">
+      <Filter>Renderer</Filter>
+    </CudaCompile>
+    <CudaCompile Include="sgl\gpu_sgl.cuh">
+      <Filter>Renderer</Filter>
+    </CudaCompile>
+    <CudaCompile Include="sgl\primitives.cu">
+      <Filter>Renderer</Filter>
+    </CudaCompile>
+    <CudaCompile Include="sgl\primitives.cuh">
+      <Filter>Renderer</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

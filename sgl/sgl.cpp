@@ -367,7 +367,7 @@ public:
 	}*/
 
 
-find_struct FindKDIntersection(RayLinear ray) {
+/*find_struct FindKDIntersection(RayLinear ray) {
 	find_struct result;
 	stack<traversal_structure_linear> stacktrav;
 	traversal_structure_linear actual;
@@ -505,10 +505,10 @@ find_struct FindKDIntersection(RayLinear ray) {
 
 
 	return result;
-}
+}*/
 
 
-	Vector3f Illuminate(int x, int y, float* ray_start, float *invMatrix, int width, int height, int index) {
+	/*Vector3f Illuminate(int x, int y, float* ray_start, float *invMatrix, int width, int height, int index) {
 		int obj = -1;
 		int level = 0;
 		RayLinear ray;
@@ -677,7 +677,7 @@ find_struct FindKDIntersection(RayLinear ray) {
 		}*/
 
 		//cout << scene_triangles_array[object].GetMaterial() << endl;
-		Material obj_material = materials[ scene_triangles_array[ object ].GetMaterial()]; // must not be emissive object
+		/*Material obj_material = materials[ scene_triangles_array[ object ].GetMaterial()]; // must not be emissive object
 																	 //return Vector3f(obj_material->getT(), obj_material->getT(), obj_material->getT());
 		DrawObject* recursion_object;
 		Vector3f mirroring;
@@ -738,7 +738,7 @@ find_struct FindKDIntersection(RayLinear ray) {
 		return color;
 
 		
-	}
+	}*/
 
 	vector<Triangle*> scene_triangles;
 	vector<PointLight*> scene_lights;
@@ -1487,7 +1487,7 @@ void sglEnd(void) {
 }
 
 void sglLinearize() {
-	cout << "Starting linearization " << scene->scene_triangles.size() << "..." << endl;
+	cout << "Starting linearization..." << endl;
 
 	scene_triangles_array = new Triangle[scene->scene_triangles.size()];
 
@@ -1496,7 +1496,7 @@ void sglLinearize() {
 		scene_triangles_array[i] = *scene->scene_triangles[i];
 	}
 
-	cout << "Linearization of triangles ended" << endl;
+	//cout << "Linearization of triangles ended" << endl;
 
 	materials = new Material[ used_materials.size() ];
 
@@ -1505,7 +1505,7 @@ void sglLinearize() {
 		materials[i] = *used_materials[i];
 	}
 
-	cout << "Linearization of materials ended" << endl;
+	//cout << "Linearization of materials ended" << endl;
 
 	lights = new PointLight[scene->scene_lights.size()];
 	lights_len = scene->scene_lights.size();
@@ -1515,7 +1515,7 @@ void sglLinearize() {
 		lights[i] = *scene->scene_lights[i];
 	}
 
-	cout << "Linearization of lights ended" << endl;
+	cout << "Linearization finished!" << endl;
 }
 
 void sglVertex4f(float x, float y, float z, float w) {
@@ -2157,7 +2157,7 @@ void trace() {
 }
 
 void sglBuildKdTree() {
-	cout << "Amount of triangles: " << scene->scene_triangles.size() << endl;
+	//cout << "Amount of triangles: " << scene->scene_triangles.size() << endl;
 	
 	kd_scene->doTheBuild(scene_triangles_array, scene->scene_triangles.size());
 
@@ -2167,9 +2167,6 @@ void sglBuildKdTree() {
 }
 
 void sglRayTraceScene() {
-	DrawObject* draw_obj;
-	int max = active_context->GetWidth()*active_context->GetHeight();
-	Ray *rays = new Ray[max];
 
 	float inv_matrix[16] = {
 		1, 0, 0, 0,
@@ -2184,7 +2181,6 @@ void sglRayTraceScene() {
 
 	InvertMatrix(inv_matrix);
 
-
 	float inv_modelview_matrix[16] = {
 		1, 0, 0, 0,
 		0, 1, 0, 0,
@@ -2197,15 +2193,33 @@ void sglRayTraceScene() {
 	float ray_start[4] = { 0, 0, 0, 1 };
 	MultVector(ray_start, inv_modelview_matrix);
 
+	int tree_depth = kd_scene->getDepth();
 
+	cout << "Tree depth: " << tree_depth << ", size of trav structure: " << sizeof(traversal_structure_linear) << endl;
+	cout << "Required size per thread: " << tree_depth * sizeof(traversal_structure_linear) << endl;
+	cout << "Required size total: " << tree_depth * sizeof(traversal_structure_linear) * active_context->GetHeight() * active_context->GetWidth() << endl;
+
+	// gpu alloc
+	cout << "Moving data to GPU" << endl;
+	gpu_data dataObject = cudaInit(active_context->GetHeight()*active_context->GetWidth(), scene->scene_triangles.size(), used_materials.size(), lights_len, kd_scene->count(), inv_matrix, kd_tree, scene_triangles_array, materials, lights, ray_start);
+
+	cout << "Begining raytracing(GPU)" << endl;
+
+	KernelStart(dataObject.rayStart , dataObject.invMatrix, active_context->GetWidth(), active_context->GetHeight(), V, dataObject.kdtree, dataObject.scene_triangles, dataObject.materials, dataObject.lights, lights_len, dataObject.bitmap, tree_depth);
+
+	// gpu free
+	cout << "Freeing memory" << endl;
+	cudaDelete(dataObject, sglGetColorBufferPointer(), active_context->GetHeight()*active_context->GetWidth() );
+	
+	
+	/*cout << "Begining raytracing" << endl;
 	for (float y = 0; y < active_context->GetHeight(); y++) {
 		for (float x = 0; x < active_context->GetWidth(); x++)
 		{
 			int index = x + active_context->GetWidth()*y;
-			IlluminateKernel(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index, V, kd_tree, scene_triangles_array, materials, lights, lights_len, sglGetColorBufferPointer());
+			IlluminateKernelCPU(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index, V, kd_tree, scene_triangles_array, materials, lights, lights_len, sglGetColorBufferPointer(), tree_depth);
 		}
-	}
-
+	}*/
 }
 
 void sglRasterizeScene() {}

@@ -1,5 +1,5 @@
 
-#include "primitives.h"
+#include "primitives.cuh"
 
 bool TransformationStack::scaleActualized;
 int DrawObject::number;
