@@ -13,6 +13,7 @@
 #include <typeinfo>
 #include <algorithm>
 #include <stack>
+#include <chrono>
 
 
 using namespace std;
@@ -1487,7 +1488,7 @@ void sglEnd(void) {
 }
 
 void sglLinearize() {
-	cout << "Starting linearization..." << endl;
+	cout << "[LINEAR]\tStarting linearization..." << endl;
 
 	scene_triangles_array = new Triangle[scene->scene_triangles.size()];
 
@@ -1515,7 +1516,7 @@ void sglLinearize() {
 		lights[i] = *scene->scene_lights[i];
 	}
 
-	cout << "Linearization finished!" << endl;
+	cout << "[LINEAR]\tLinearization finished!" << endl;
 }
 
 void sglVertex4f(float x, float y, float z, float w) {
@@ -2168,6 +2169,8 @@ void sglBuildKdTree() {
 
 void sglRayTraceScene() {
 
+	
+
 	float inv_matrix[16] = {
 		1, 0, 0, 0,
 		0, 1, 0, 0,
@@ -2195,29 +2198,45 @@ void sglRayTraceScene() {
 
 	int tree_depth = kd_scene->getDepth();
 
-	cout << "Tree depth: " << tree_depth << ", size of trav structure: " << sizeof(traversal_structure_linear) << endl;
-	cout << "Required size per thread: " << tree_depth * sizeof(traversal_structure_linear) << endl;
-	cout << "Required size total: " << tree_depth * sizeof(traversal_structure_linear) * active_context->GetHeight() * active_context->GetWidth() << endl;
+	//cout << "Tree depth: " << tree_depth << ", size of trav structure: " << sizeof(traversal_structure_linear) << endl;
+	//cout << "Required size per thread: " << tree_depth * sizeof(traversal_structure_linear) << endl;
+	//cout << "Required size total: " << tree_depth * sizeof(traversal_structure_linear) * active_context->GetHeight() * active_context->GetWidth() << endl;
 
 	// gpu alloc
-	cout << "Moving data to GPU" << endl;
+	cout << "[CUDA]\t\tMoving data to GPU" << endl;
+	auto start = std::chrono::high_resolution_clock::now();
 	gpu_data dataObject = cudaInit(active_context->GetHeight()*active_context->GetWidth(), scene->scene_triangles.size(), used_materials.size(), lights_len, kd_scene->count(), inv_matrix, kd_tree, scene_triangles_array, materials, lights, ray_start);
+	auto finish = std::chrono::high_resolution_clock::now();
 
-	cout << "Begining raytracing(GPU)" << endl;
+	std::chrono::duration<double> elapsed = finish - start;
+	std::cout << "[TIME]\t\tTime for initialization: " << elapsed.count() << " s\n";
 
-	KernelStart(dataObject.rayStart , dataObject.invMatrix, active_context->GetWidth(), active_context->GetHeight(), V, dataObject.kdtree, dataObject.scene_triangles, dataObject.materials, dataObject.lights, lights_len, dataObject.bitmap, tree_depth);
+
+	cout << "[CUDA]\t\tBegining raytracing(GPU)" << endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	KernelStart(dataObject.rayStart , dataObject.invMatrix, active_context->GetWidth(), active_context->GetHeight(), V, dataObject.kdtree, dataObject.scene_triangles, dataObject.materials, dataObject.lights, lights_len, dataObject.bitmap, tree_depth, scene->scene_triangles.size());
+	finish = std::chrono::high_resolution_clock::now();
+
+	elapsed = finish - start;
+	std::cout << "[TIME]\t\tTime for render: " << elapsed.count() << " s\n";
 
 	// gpu free
-	cout << "Freeing memory" << endl;
-	cudaDelete(dataObject, sglGetColorBufferPointer(), active_context->GetHeight()*active_context->GetWidth() );
-	
+	cout << "[CUDA]\t\tFreeing memory" << endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	cudaDelete(dataObject, sglGetColorBufferPointer(), active_context->GetHeight()*active_context->GetWidth(), kd_scene->count(), kd_tree);
+	finish = std::chrono::high_resolution_clock::now();
+
+	elapsed = finish - start;
+	std::cout << "[TIME]\t\tTime for free: " << elapsed.count() << " s\n";
 	
 	/*cout << "Begining raytracing" << endl;
 	for (float y = 0; y < active_context->GetHeight(); y++) {
 		for (float x = 0; x < active_context->GetWidth(); x++)
 		{
 			int index = x + active_context->GetWidth()*y;
-			IlluminateKernelCPU(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index, V, kd_tree, scene_triangles_array, materials, lights, lights_len, sglGetColorBufferPointer(), tree_depth);
+			IlluminateKernelCPU(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index, V, kd_tree, scene_triangles_array, materials, lights, lights_len, sglGetColorBufferPointer(), tree_depth, scene->scene_triangles.size());
 		}
 	}*/
 }

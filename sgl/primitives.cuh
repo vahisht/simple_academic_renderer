@@ -505,19 +505,19 @@ public:
 	}
 	__host__ __device__ Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material) {
 
-		vertices_linear = new Vertex[3];
+		//vertices_linear = new Vertex[3];
 
-		vertices_linear[0] = *_vertices->at(0);
-		vertices_linear[1] = *_vertices->at(1);
-		vertices_linear[2] = *_vertices->at(2);
+		vertices_linear0 = *_vertices->at(0);
+		vertices_linear1 = *_vertices->at(1);
+		vertices_linear2 = *_vertices->at(2);
 
-		Vertex u = vertices_linear[1] - vertices_linear[0];
-		Vertex v = vertices_linear[2] - vertices_linear[0];
+		Vertex u = vertices_linear1 - vertices_linear0;
+		Vertex v = vertices_linear2 - vertices_linear0;
 
 		//cout << "B" << endl;
 
 		this->normals = NULL;
-		this->normals_linear = NULL;
+		//this->normals_linear = NULL;
 
 		cout << "NULL" << endl;
 
@@ -529,14 +529,14 @@ public:
 		this->normal.normalizeThis();
 	}
 	__host__ __device__ Triangle(sglEElementType _object_type, vector<Vertex*>* _vertices, vector<Vertex*>* _normals, int _used_material) : object_type(_object_type), vertices(_vertices), material(_used_material), normals(_normals) {
-		vertices_linear = new Vertex[3];
+		//vertices_linear = new Vertex[3];
 
-		vertices_linear[0] = *_vertices->at(0);
-		vertices_linear[1] = *_vertices->at(1);
-		vertices_linear[2] = *_vertices->at(2);
+		vertices_linear0 = *_vertices->at(0);
+		vertices_linear1 = *_vertices->at(1);
+		vertices_linear2 = *_vertices->at(2);
 
-		Vertex u = vertices_linear[1] - vertices_linear[0];
-		Vertex v = vertices_linear[2] - vertices_linear[0];
+		Vertex u = vertices_linear1 - vertices_linear0;
+		Vertex v = vertices_linear2 - vertices_linear0;
 
 		/*cout << "Got " << _normals->size() << endl;
 		cout << "Ended with " << this->normals->size() << endl;*/
@@ -545,13 +545,18 @@ public:
 		//cout << this->normals->size() << endl;
 
 	
-		this->normals_linear = new Vertex[normals->size()];
+		//this->normals_linear = new Vertex[normals->size()];
+		this->hasNormals = true;
 
-		for (int i = 0; i < normals->size(); i++)
+		/*for (int i = 0; i < normals->size(); i++)
 		{
 			normals->at(i)->normalizeThis();
 			this->normals_linear[i] = *normals->at(i);
-		}
+		}*/
+
+		normals_linear0 = *normals->at(0);
+		normals_linear1 = *normals->at(1);
+		normals_linear2 = *normals->at(2);
 
 		this->normal = *(new Vertex(
 			(u.getY()*v.getZ() - u.getZ()*v.getY()),
@@ -566,31 +571,31 @@ public:
 		/*for (vector<Vertex*>::iterator it = vertices->begin(); it != vertices->end(); ++it)
 		delete *it;*/
 
-		delete vertices_linear;
-		if (normals) delete normals;
+		//delete vertices_linear;
+		//if (normals) delete normals;
 		//delete normal;
 	}
 	__host__ __device__ void normals_print() {
 		cout << this->normals->size() << endl;
 	}
 	__host__ __device__ void print() {
-		cout << "(" << this->vertices_linear[0].getX() << "," << this->vertices_linear[0].getY() << "," << this->vertices_linear[0].getZ() << ") ";
-		cout << "(" << this->vertices_linear[1].getX() << "," << this->vertices_linear[1].getY() << "," << this->vertices_linear[1].getZ() << ") ";
-		cout << "(" << this->vertices_linear[2].getX() << "," << this->vertices_linear[2].getY() << "," << this->vertices_linear[2].getZ() << ")" << endl;
+		cout << "(" << this->vertices_linear0.getX() << "," << this->vertices_linear0.getY() << "," << this->vertices_linear0.getZ() << ") ";
+		cout << "(" << this->vertices_linear1.getX() << "," << this->vertices_linear1.getY() << "," << this->vertices_linear1.getZ() << ") ";
+		cout << "(" << this->vertices_linear2.getX() << "," << this->vertices_linear2.getY() << "," << this->vertices_linear2.getZ() << ")" << endl;
 	}
 	__host__ __device__ Vertex getNormal(Vertex hit) {
 		//cout << this->normals->size() << endl;
 		//return *this->normal; // DEBUG
-		if (this->normals == NULL) return this->normal;
+		if (!hasNormals) return this->normal;
 
 		//cout << "Normals available" << endl;
 
 		Vertex v2_1, v2_3, v2_t;
 
 		double bary[3];
-		v2_1 = this->vertices_linear[0] - this->vertices_linear[1];
-		v2_3 = this->vertices_linear[2] - this->vertices_linear[1];
-		v2_t = hit - this->vertices_linear[1];
+		v2_1 = this->vertices_linear0 - this->vertices_linear1;
+		v2_3 = this->vertices_linear2 - this->vertices_linear1;
+		v2_t = hit - this->vertices_linear1;
 
 		float d00 = Vertex::DotProduct(v2_1, v2_1);
 		float d01 = Vertex::DotProduct(v2_1, v2_3);
@@ -603,10 +608,11 @@ public:
 		bary[1] = (d00 * d21 - d01 * d20) / denom;
 		bary[2] = 1.0f - bary[0] - bary[1];
 
-		return ( this->normals_linear[0] * bary[0] + this->normals_linear[1] * bary[2] + this->normals_linear[2] * bary[1]);
+		return ( this->normals_linear0 * bary[0] + this->normals_linear1 * bary[2] + this->normals_linear2 * bary[1]);
 	}
-	__host__ __device__ bool FindIntersection(RayLinear &ray, float &tHit, bool unCull = false) {
+	__host__ __device__ float FindIntersection(RayLinear ray, bool unCull = false) {
 
+		float tHit;
 		float SMALL_NUM = 0.000000001f;
 		float		r, a, b;              // params to calc ray-plane intersect
 
@@ -614,27 +620,27 @@ public:
 
 		float angle = dotProduct(normal, ray.direction);
 		if (!unCull && angle > 0)
-			return false; // behind ray start
+			return -1.0f; // behind ray start
 
 						  // get triangle edge vectors and plane normal
-		Vertex u = vertices_linear[1] - vertices_linear[0];
-		Vertex v = vertices_linear[2] - vertices_linear[0];
+		Vertex u = vertices_linear1 - vertices_linear0;
+		Vertex v = vertices_linear2 - vertices_linear0;
 		Vertex n = Vertex(this->normal.getX(), this->normal.getY(), this->normal.getZ(), 1.0f); // cross product
 																				 //if (n == (Vector)0)			// triangle is degenerate
 																				 //	return -1;					// do not deal with this case
 
 																				 //dir = R.P1 - R.P0;			// ray direction vector
-		Vertex w0 = ray.origin - vertices_linear[0];
+		Vertex w0 = ray.origin - vertices_linear0;
 		a = (-1)*(Vertex::DotProduct(n, w0));
 		b = Vertex::DotProduct(n, ray.direction);
 		if (fabs(b) < SMALL_NUM) {		// ray is  parallel to triangle plane
-			return false;				// ray disjoint from plane
+			return -1.0f;				// ray disjoint from plane
 		}
 
 		// get intersect point of ray with triangle plane
 		r = a / b;
 		if (r < 0.02)                    // ray goes away from triangle
-			return false;				// => no intersect
+			return -1.0f;				// => no intersect
 										// for a segment, also test if (r > 1.0) => no intersect
 
 		Vertex I = ray.origin + (ray.direction)*r;            // intersect point of ray and plane
@@ -645,7 +651,7 @@ public:
 		uu = Vertex::DotProduct(u, u);
 		uv = Vertex::DotProduct(u, v);
 		vv = Vertex::DotProduct(v, v);
-		Vertex w = I - vertices_linear[0];
+		Vertex w = I - vertices_linear0;
 		wu = Vertex::DotProduct(w, u);
 		wv = Vertex::DotProduct(w, v);
 		D = uv * uv - uu * vv;
@@ -654,18 +660,21 @@ public:
 		float s, t;
 		s = (uv * wv - vv * wu) / D;
 		if (s < 0.0 || s > 1.0)         // I is outside T
-			return 0;
+			return -1.0f;
 		t = (uv * wu - uu * wv) / D;
 		if (t < 0.0 || (s + t) > 1.0)  // I is outside T
-			return 0;
+			return -1.0f;
 
 		I = I - ray.origin; // Z I udelam pouze vektor od zacatku k bodu pruniku pro vypocitani vzdalenosti
-		tHit = sqrt((I.getX() * I.getX()) + (I.getY()* I.getY()) + (I.getZ() * I.getZ()));
+		tHit = sqrtf((I.getX() * I.getX()) + (I.getY()* I.getY()) + (I.getZ() * I.getZ()));
 
-		return 1;                       // I is in T
+		return tHit;                       // I is in T
 
 
 	}
+
+	__host__ __device__ bool callTest() { return true; };
+
 	__host__ __device__ bool FindIntersection(Ray &ray, float &tHit, bool unCull = false) {
 
 		float SMALL_NUM = 0.000000001f;
@@ -678,14 +687,14 @@ public:
 			return false; // behind ray start
 
 						  // get triangle edge vectors and plane normal
-		Vertex u = vertices_linear[1] - vertices_linear[0];
-		Vertex v = vertices_linear[2] - vertices_linear[0];
+		Vertex u = vertices_linear1 - vertices_linear0;
+		Vertex v = vertices_linear2 - vertices_linear0;
 		Vertex n = Vertex(this->normal.getX(), this->normal.getY(), this->normal.getZ(), 1.0f); // cross product
 																				 //if (n == (Vector)0)			// triangle is degenerate
 																				 //	return -1;					// do not deal with this case
 
 																				 //dir = R.P1 - R.P0;			// ray direction vector
-		Vertex w0 = *ray.origin - vertices_linear[0];
+		Vertex w0 = *ray.origin - vertices_linear0;
 		a = (-1)*(Vertex::DotProduct(n, w0));
 		b = Vertex::DotProduct(n, *ray.direction);
 		if (fabs(b) < SMALL_NUM) {		// ray is  parallel to triangle plane
@@ -706,7 +715,7 @@ public:
 		uu = Vertex::DotProduct(u, u);
 		uv = Vertex::DotProduct(u, v);
 		vv = Vertex::DotProduct(v, v);
-		Vertex w = I - vertices_linear[0];
+		Vertex w = I - vertices_linear0;
 		wu = Vertex::DotProduct(w, u);
 		wv = Vertex::DotProduct(w, v);
 		D = uv * uv - uu * vv;
@@ -733,8 +742,8 @@ public:
 		float r2 = (double)rand() / (RAND_MAX);
 
 		float u, v;
-		Vertex e1 = (vertices_linear[1] - vertices_linear[0]);
-		Vertex e2 = (vertices_linear[2] - vertices_linear[0]);
+		Vertex e1 = (vertices_linear1 - vertices_linear0);
+		Vertex e2 = (vertices_linear2 - vertices_linear0);
 		if (r1 + r2 > 1) {
 			u = 1 - r1;
 			v = 1 - r2;
@@ -744,13 +753,13 @@ public:
 			v = r2;
 		}
 
-		return (vertices_linear[0] + e1*u + e2*v);
+		return (vertices_linear0 + e1*u + e2*v);
 	}
 
 	__host__ __device__ float areaSize() {
-		float a = Vertex::Distance(vertices_linear[0], vertices_linear[1]);
-		float b = Vertex::Distance(vertices_linear[1], vertices_linear[2]);
-		float c = Vertex::Distance(vertices_linear[2], vertices_linear[0]);
+		float a = Vertex::Distance(vertices_linear0, vertices_linear1);
+		float b = Vertex::Distance(vertices_linear1, vertices_linear2);
+		float c = Vertex::Distance(vertices_linear2, vertices_linear0);
 
 		// Heron's formula
 		float s = (a + b + c) / 2;
@@ -764,12 +773,17 @@ public:
 	int material = -1;
 
 private:
+	bool hasNormals = false;
 	Vertex normal;
 	sglEElementType object_type;
 	vector<Vertex*>* vertices;
-	Vertex *vertices_linear = NULL;
+	Vertex vertices_linear0;
+	Vertex vertices_linear1;
+	Vertex vertices_linear2;
 	vector<Vertex*>* normals = NULL;
-	Vertex *normals_linear = NULL;
+	Vertex normals_linear0;
+	Vertex normals_linear1;
+	Vertex normals_linear2;
 	
 };
 

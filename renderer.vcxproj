@@ -204,6 +204,7 @@
     <ClCompile Include="include\nffread.cpp" />
     <CudaCompile Include="sgl\gpu_sgl.cu">
       <FileType>Document</FileType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">-lineinfo %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
     <ClCompile Include="sgl\kd_tree.cpp" />
     <CudaCompile Include="sgl\primitives.cu">

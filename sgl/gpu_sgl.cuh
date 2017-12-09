@@ -5,7 +5,7 @@
 #define FLOAT_MAX 300000000000000000000.0f
 
 #define EPSILON 0.00000001f
-#define CUDA_DEBUG true
+#define CUDA_DEBUG false
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
@@ -54,7 +54,7 @@ struct gpu_data {
 
 gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start);
 
-void cudaDelete( gpu_data data, float* bitmap, int resolution);
+void cudaDelete( gpu_data data, float* bitmap, int resolution, int nodes_num, kdNodeLinear* kd_tree);
 
 __device__ find_struct FindKDIntersectionGPU(RayLinear ray, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, int depth);
 
@@ -62,4 +62,4 @@ __host__ void IlluminateKernelCPU(int x, int y, float* ray_start, float *invMatr
 
 //__global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer);
 
-void KernelStart(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth);
+void KernelStart(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n);

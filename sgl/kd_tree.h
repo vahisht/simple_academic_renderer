@@ -744,6 +744,7 @@ struct kdNodeLinear {
 	splitPlane p; /*!< Split plane */
 	int len;
 	int* triangles = NULL;
+	int* triangles_device = NULL;
 
 	kdNodeLinear() {
 
@@ -912,8 +913,6 @@ public:
 		this->V->setVoxelParameters(T, size);
 
 		root = BuildKdTree(T, size, this->node_count);
-
-		cout << "Tree built" << endl;
 	}
 
 	void printLevel(kdNode* node, int level) {

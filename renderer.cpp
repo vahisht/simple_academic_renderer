@@ -336,12 +336,12 @@ RayTraceAssimpScene(const char *scenename)
 	const aiScene *scene = importer.ReadFile(scenename_obj, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices );
 
 	if (scene == NULL) {
-		cerr << "Assimp: Could not open " << scenename_obj << " for assimp reading." << std::endl;
+		cerr << "[ASSIMP]\tAssimp: Could not open " << scenename_obj << " for assimp reading." << std::endl;
 		return 0.0;
 	}
 
 
-	cout << "OBJ file " << scenename << " successfully parsed." << endl;
+	cout << "[ASSIMP]\tOBJ file " << scenename << " successfully parsed." << endl;
 
 
 	// projection transformation
@@ -428,7 +428,7 @@ RayTraceAssimpScene(const char *scenename)
 	string scenename_view = string(scenename) + ".view";
 	std::ifstream file(scenename_view);
 	if (file.fail()) {
-		std::cerr << "Error: Could not open \"" << scenename_view << "\" for reading." << std::endl;
+		std::cerr << "[ASSIMP]\tError: Could not open \"" << scenename_view << "\" for reading." << std::endl;
 	}
 	else {
 		std::string input;
@@ -499,14 +499,13 @@ RayTraceAssimpScene(const char *scenename)
 	sgluLookAt(
 		from_x, from_y, from_z, at_x, at_y, at_z, up_x, up_y, up_z );
 
-	cout << endl;
 	sglLinearize();
-	cout << endl;
+	cout << "[KD-TREE]\tKD-tree construction started" << endl;
 	sglBuildKdTree();
-	cout << "KD-tree built" << endl << endl;
+	cout << "[KD-TREE]\tKD-tree built" << endl;
 	// compute a ray traced image and store it in the color buffer
 	sglRayTraceScene();
-	cout << "Rendering done" << endl;
+	cout << "[RENDERER]\tRendering done" << endl;
 	//sglRasterizeScene();
 	return 0.0f;
 }
@@ -659,6 +658,8 @@ std::vector<std::string> splitpath(
 int main(int argc, char **argv) 
 {
 
+	cout << "[RENDERER]\tRenderer start" << endl;
+
 #if USE_GUI
 	// Initialize GLUT
   glutInit(&argc, argv);
@@ -681,8 +682,6 @@ int main(int argc, char **argv)
   resultsInfo<<"res:"<<endl;
 
   
-
-
 	 /// read in the NFF file
 	 /*const char *sceneFile = "cornell-blocks.nff";
 	 sglSetContext(_contexts[3]);
@@ -699,11 +698,11 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/Park";
    //const char *sceneFile = "Data/City";
    //const char *sceneFile = "Data/City2";					// tenhle model se tváøí divnì i v Blenderu
-   const char *sceneFile = "Data/teapots";
+   //const char *sceneFile = "Data/teapots";
    //const char *sceneFile = "Data/sibenik";				// pozor na umístìní svìtla
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
-   //const char *sceneFile = "Data/plysak_normalized";		
+   const char *sceneFile = "Data/plysak_normalized";		
    //const char *sceneFile = "Data/cornellbox-empty-rg";
    //const char *sceneFile = "Data/cornellbox-sphere";
 
@@ -726,11 +725,11 @@ int main(int argc, char **argv)
 
    sglSetContext(_contexts[3]);
    //float time = RayTraceScene(sceneFile);
-   cout << "Starting with " << sceneFile << endl;
+   cout << "[ASSIMP]\tStarting with " << sceneFile << endl;
    RayTraceAssimpScene(sceneFile);
    
    resultsInfo<<"    test4a.png "<<endl;
-   cout<< filename.c_str() <<endl;
+   cout << "[RENDERER]\t" << filename.c_str() <<endl;
    WriteTGA( filename.c_str() );
 
   

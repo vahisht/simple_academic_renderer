@@ -626,7 +626,7 @@ kdNode* BuildKdTree(Triangle* T_src, int size, int &count) {
 	vector<int >* T = new vector<int>(size, NULL);
 	boundingBox AABB;
 
-	cout << "Build of KD-tree started" << endl;
+	//cout << "Build of KD-tree started" << endl;
 
 	// make triangles happen
 	for (int i = 0; i < size; i++)
