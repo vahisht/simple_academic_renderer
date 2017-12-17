@@ -2,11 +2,12 @@
 
 #include "gpu_sgl.cuh"
 
-gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start) {
+gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start, int triangles_kd) {
 	gpu_data result;
 	cudaError_t cudaStatus;
 	long total = 0;
 	size_t free, total_mem;
+	int offset = 0;
 
 	// FINAL BITMAP
 	cudaStatus = cudaMalloc((void**)&(result.bitmap), 3*resolution*sizeof(float));
@@ -73,17 +74,21 @@ gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int ligh
 
 
 	// KD TREE NODE TRIANGLES ARRAYS
+	cudaStatus = cudaMalloc((void**)&(result.kd_node_triangles), triangles_kd * sizeof(int));
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc kdtree nodes failed!: %s\n", cudaGetErrorString(cudaStatus));
+	} total += triangles_kd * sizeof(int);
+
 	for (int i = 0; i < nodes_num; i++)
 	{
 		if (kd_tree[i].triangles == NULL) continue;
+		
+		cudaStatus = cudaMemcpy(result.kd_node_triangles + offset, kd_tree[i].triangles, kd_tree[i].len * sizeof(int), cudaMemcpyHostToDevice);
+		kd_tree[i].gpu_offset = offset;
+		offset += kd_tree[i].len;
 
-		cudaStatus = cudaMalloc((void**)&(kd_tree[i].triangles_device), kd_tree[i].len * sizeof(int));
 		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMalloc kdtree node %d failed!: %s\n", i , cudaGetErrorString(cudaStatus));
-		} total += kd_tree[i].len * sizeof(int);
-		cudaStatus = cudaMemcpy(kd_tree[i].triangles_device, kd_tree[i].triangles, kd_tree[i].len * sizeof(int), cudaMemcpyHostToDevice);
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMemcpy kdtree failed!: %s\n", cudaGetErrorString(cudaStatus));
+			fprintf(stderr, "cudaMemcpy kdtree %d failed!: %s\n", i, cudaGetErrorString(cudaStatus));
 		}
 	}
 
@@ -298,7 +303,7 @@ find_struct FindKDIntersection(RayLinear ray, Voxel V, kdNodeLinear *kd_tree, Tr
 	return result;
 }
 
-__device__ find_struct FindKDIntersectionGPU(RayLinear ray, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, int depth) {
+__device__ find_struct FindKDIntersectionGPU(RayLinear ray, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, int depth, int* kd_node_triangles) {
 	find_struct result;
 
 	int top = -1;
@@ -420,13 +425,16 @@ __device__ find_struct FindKDIntersectionGPU(RayLinear ray, Voxel V, kdNodeLinea
 
 		} // while not leaf
 
-		if (kd_tree[actual.node].triangles_device != NULL) {
-			for (int i = 0; i < kd_tree[actual.node].len; i++)
+		if (kd_tree[actual.node].len > 0) {
+
+
+			for (int i = kd_tree[actual.node].gpu_offset; i < kd_tree[actual.node].len + kd_tree[actual.node].gpu_offset; i++)
 			{
-				tmp = scene_triangles_array[kd_tree[actual.node].triangles_device[i]].FindIntersection(ray);
+				tmp = scene_triangles_array[kd_node_triangles[i]].FindIntersection(ray);
+				//tmp = scene_triangles_array[kd_tree[actual.node].triangles_device[i]].FindIntersection(ray);
 				if (tmp >= 0.0f && tmp < result.dist) { // most definitely not ok
 					result.dist = tmp;
-					result.object = kd_tree[actual.node].triangles_device[i];
+					result.object = kd_node_triangles[i];
 					found = true;
 				}
 			}
@@ -753,7 +761,7 @@ __host__ void IlluminateKernelCPU(int x, int y, float* ray_start, float *invMatr
 
 }
 
-__global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n)
+__global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n, int* kd_node_triangles)
 {
 	int x = blockIdx.x*blockDim.x + threadIdx.x;
 	int y = blockIdx.y*blockDim.y + threadIdx.y;
@@ -928,20 +936,20 @@ __global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, 
 
 		} // while not leaf
 
-		if (kd_tree[actual.node].triangles_device != NULL) {
-			for (int i = 0; i < kd_tree[actual.node].len; i++)
+		if (kd_tree[actual.node].len > 0) {
+			for (int i = kd_tree[actual.node].gpu_offset; i < kd_tree[actual.node].len + kd_tree[actual.node].gpu_offset; i++)
 			{
 				//inters_steps++; 
-				if (obj == kd_tree[actual.node].triangles_device[i]) continue;
+				if (obj == kd_node_triangles[i]) continue;
 				//if (scene_triangles_array[kd_tree[actual.node].triangles[i]].FindIntersection(ray, tmp) && tmp < dist) { // most definitely not ok
 				//	dist = tmp;
 				//	object = kd_tree[actual.node].triangles[i];
 				//	found = true;
 				//}
-				tmp = scene_triangles_array[ kd_tree[actual.node].triangles_device[i] ].FindIntersection(ray);
+				tmp = scene_triangles_array[kd_node_triangles[i]].FindIntersection(ray);
 				if (tmp >= 0.0f && tmp < dist) { // most definitely not ok
 					dist = tmp;
-					object = kd_tree[actual.node].triangles_device[i];
+					object = kd_node_triangles[i];
 					found = true;
 				}
 			}
@@ -1004,7 +1012,7 @@ __global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, 
 		RayLinear shadowRay(hit.x, hit.y, hit.z, lights[i].position.x, lights[i].position.y, lights[i].position.z);
 
 
-		shadow_data = FindKDIntersectionGPU(shadowRay, V, kd_tree, scene_triangles_array, depth);
+		shadow_data = FindKDIntersectionGPU(shadowRay, V, kd_tree, scene_triangles_array, depth, kd_node_triangles);
 
 		light_dst = sqrt(dir_to_light.x*dir_to_light.x + dir_to_light.y*dir_to_light.y + dir_to_light.z*dir_to_light.z);
 
@@ -1042,12 +1050,12 @@ __global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, 
 
 }
 
-void KernelStart(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n) {
+void KernelStart(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n, int* kd_node_triangles) {
 	
 	dim3 blocks(width / BLOCK_DIMENSION, height / BLOCK_DIMENSION);
 	dim3 threads(BLOCK_DIMENSION, BLOCK_DIMENSION);
 
-	IlluminateKernel<<< blocks, threads >>>(ray_start, invMatrix, width, height, V, kd_tree, scene_triangles_array, materials, lights, lights_len, color_buffer, depth, triangles_n);
+	IlluminateKernel<<< blocks, threads >>>(ray_start, invMatrix, width, height, V, kd_tree, scene_triangles_array, materials, lights, lights_len, color_buffer, depth, triangles_n, kd_node_triangles);
 	//addKernel<<<1, size >>>(dev_c, dev_a, dev_b);
 	
 	cudaError cudaStatus = cudaGetLastError();

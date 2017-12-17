@@ -2196,7 +2196,10 @@ void sglRayTraceScene() {
 	float ray_start[4] = { 0, 0, 0, 1 };
 	MultVector(ray_start, inv_modelview_matrix);
 
-	int tree_depth = kd_scene->getDepth();
+	int triangles_kd = 0;
+	int tree_depth = kd_scene->getDepth( triangles_kd );
+
+	cout << triangles_kd << endl;
 
 	//cout << "Tree depth: " << tree_depth << ", size of trav structure: " << sizeof(traversal_structure_linear) << endl;
 	//cout << "Required size per thread: " << tree_depth * sizeof(traversal_structure_linear) << endl;
@@ -2205,7 +2208,7 @@ void sglRayTraceScene() {
 	// gpu alloc
 	cout << "[CUDA]\t\tMoving data to GPU" << endl;
 	auto start = std::chrono::high_resolution_clock::now();
-	gpu_data dataObject = cudaInit(active_context->GetHeight()*active_context->GetWidth(), scene->scene_triangles.size(), used_materials.size(), lights_len, kd_scene->count(), inv_matrix, kd_tree, scene_triangles_array, materials, lights, ray_start);
+	gpu_data dataObject = cudaInit(active_context->GetHeight()*active_context->GetWidth(), scene->scene_triangles.size(), used_materials.size(), lights_len, kd_scene->count(), inv_matrix, kd_tree, scene_triangles_array, materials, lights, ray_start, triangles_kd);
 	auto finish = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> elapsed = finish - start;
@@ -2215,7 +2218,7 @@ void sglRayTraceScene() {
 	cout << "[CUDA]\t\tBegining raytracing(GPU)" << endl;
 
 	start = std::chrono::high_resolution_clock::now();
-	KernelStart(dataObject.rayStart , dataObject.invMatrix, active_context->GetWidth(), active_context->GetHeight(), V, dataObject.kdtree, dataObject.scene_triangles, dataObject.materials, dataObject.lights, lights_len, dataObject.bitmap, tree_depth, scene->scene_triangles.size());
+	KernelStart(dataObject.rayStart , dataObject.invMatrix, active_context->GetWidth(), active_context->GetHeight(), V, dataObject.kdtree, dataObject.scene_triangles, dataObject.materials, dataObject.lights, lights_len, dataObject.bitmap, tree_depth, scene->scene_triangles.size(), dataObject.kd_node_triangles);
 	finish = std::chrono::high_resolution_clock::now();
 
 	elapsed = finish - start;

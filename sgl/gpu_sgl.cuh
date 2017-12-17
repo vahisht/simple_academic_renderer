@@ -50,9 +50,10 @@ struct gpu_data {
 	Material* materials;
 	PointLight* lights;
 	kdNodeLinear* kdtree;
+	int* kd_node_triangles;
 };
 
-gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start);
+gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start, int triangles_kd);
 
 void cudaDelete( gpu_data data, float* bitmap, int resolution, int nodes_num, kdNodeLinear* kd_tree);
 
@@ -62,4 +63,4 @@ __host__ void IlluminateKernelCPU(int x, int y, float* ray_start, float *invMatr
 
 //__global__ void IlluminateKernel(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer);
 
-void KernelStart(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n);
+void KernelStart(float* ray_start, float *invMatrix, int width, int height, Voxel V, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, int lights_len, float* color_buffer, int depth, int triangles_n, int* kd_node_triangles);

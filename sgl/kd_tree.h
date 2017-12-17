@@ -743,6 +743,7 @@ struct kdNodeLinear {
 	bool splits = false;
 	splitPlane p; /*!< Split plane */
 	int len;
+	int gpu_offset = 0;
 	int* triangles = NULL;
 	int* triangles_device = NULL;
 
@@ -893,19 +894,21 @@ public:
 		return result;
 	}
 
-	int depth(kdNode* node) {
+	int depth(kdNode* node, int & total_triangles) {
 		int left, right;
 
-		left = (node->left == NULL) ? 0 : this->depth( node->left );
-		right = (node->right == NULL) ? 0 : this->depth( node->right );
+		left = (node->left == NULL) ? 0 : this->depth( node->left, total_triangles );
+		right = (node->right == NULL) ? 0 : this->depth( node->right, total_triangles);
 
 		left++; right++;
+
+		if (node->triangles != NULL) total_triangles += node->triangles->size();
 
 		return max(left, right);
 	}
 
-	int getDepth() {
-		return depth( this->root ) - 1;
+	int getDepth(int & total_triangles) {
+		return depth( this->root, total_triangles ) - 1;
 	};
 
 	void doTheBuild(Triangle* T, int size) {

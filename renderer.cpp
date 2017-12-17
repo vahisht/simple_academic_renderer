@@ -31,6 +31,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <chrono>
 
 using namespace std;
 
@@ -51,7 +52,6 @@ static int _contexts[10];
 
 float tx=0, ty=0, tz=0, tstep=0.2;
 float rot=3.14/3, rotstep=0.1;
-
 
 /// helper class for sgluLookAt
 class Vector3 {
@@ -333,6 +333,10 @@ RayTraceAssimpScene(const char *scenename)
 {	
 	Assimp::Importer importer;
 	string scenename_obj = string(scenename) + ".obj";
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+
 	const aiScene *scene = importer.ReadFile(scenename_obj, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices );
 
 	if (scene == NULL) {
@@ -343,6 +347,11 @@ RayTraceAssimpScene(const char *scenename)
 
 	cout << "[ASSIMP]\tOBJ file " << scenename << " successfully parsed." << endl;
 
+
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+
+	std::cout << "[TIME]\t\tLoading done in: " << elapsed.count() << " s\n";
 
 	// projection transformation
 	sglMatrixMode(SGL_PROJECTION);
@@ -423,7 +432,7 @@ RayTraceAssimpScene(const char *scenename)
 
 	float angle(80.0);
 	float close(1.0f);
-	float far(500.0f);
+	float far_plane(500.0f);
 
 	string scenename_view = string(scenename) + ".view";
 	std::ifstream file(scenename_view);
@@ -469,7 +478,7 @@ RayTraceAssimpScene(const char *scenename)
 			}
 			else if (input.compare("yon") == 0) {
 				file >> input;
-				far = stof(input);
+				far_plane = stof(input);
 			}
 		}
 
@@ -492,7 +501,7 @@ RayTraceAssimpScene(const char *scenename)
 	// setup the camera using appopriate projection transformation
 	// note that the resolution stored in the nff file is ignored
 	sglMatrixMode(SGL_PROJECTION);
-	sgluPerspective(angle, (float)WIDTH / HEIGHT, close, far);
+	sgluPerspective(angle, (float)WIDTH / HEIGHT, close, far_plane);
 
 	// modelview transformation
 	sglMatrixMode(SGL_MODELVIEW);
@@ -500,9 +509,17 @@ RayTraceAssimpScene(const char *scenename)
 		from_x, from_y, from_z, at_x, at_y, at_z, up_x, up_y, up_z );
 
 	sglLinearize();
+	
 	cout << "[KD-TREE]\tKD-tree construction started" << endl;
+	start = std::chrono::high_resolution_clock::now();
 	sglBuildKdTree();
+	finish = std::chrono::high_resolution_clock::now();
 	cout << "[KD-TREE]\tKD-tree built" << endl;
+
+	elapsed = finish - start;
+
+	std::cout << "[TIME]\t\tKD-tree done in: " << elapsed.count() << " s\n";
+
 	// compute a ray traced image and store it in the color buffer
 	sglRayTraceScene();
 	cout << "[RENDERER]\tRendering done" << endl;
@@ -692,7 +709,7 @@ int main(int argc, char **argv)
 	
    /// read in the NFF file
    
-   //const char *sceneFile = "Data/A10";
+   const char *sceneFile = "Data/A10";
    //const char *sceneFile = "Data/Armadillo";
    //const char *sceneFile = "Data/blob";
    //const char *sceneFile = "Data/Park";
@@ -702,7 +719,7 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/sibenik";				// pozor na umístìní svìtla
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
-   const char *sceneFile = "Data/plysak_normalized";		
+   //const char *sceneFile = "Data/plysak_normalized";		
    //const char *sceneFile = "Data/cornellbox-empty-rg";
    //const char *sceneFile = "Data/cornellbox-sphere";
 
@@ -725,9 +742,17 @@ int main(int argc, char **argv)
 
    sglSetContext(_contexts[3]);
    //float time = RayTraceScene(sceneFile);
+
+
    cout << "[ASSIMP]\tStarting with " << sceneFile << endl;
+
+   auto start_total = std::chrono::high_resolution_clock::now();
    RayTraceAssimpScene(sceneFile);
+   auto finish_total = std::chrono::high_resolution_clock::now();
+   std::chrono::duration<double> elapsed_total = finish_total - start_total;
    
+   std::cout << "[TIME]\t\tTOTAL TIME: " << elapsed_total.count() << " s\n";
+
    resultsInfo<<"    test4a.png "<<endl;
    cout << "[RENDERER]\t" << filename.c_str() <<endl;
    WriteTGA( filename.c_str() );
