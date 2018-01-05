@@ -2,7 +2,7 @@
 
 #include "gpu_sgl.cuh"
 
-gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start, int triangles_kd) {
+gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start, int triangles_kd, int* kd_indices_array) {
 	gpu_data result;
 	cudaError_t cudaStatus;
 	long total = 0;
@@ -78,8 +78,12 @@ gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int ligh
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMalloc kdtree nodes failed!: %s\n", cudaGetErrorString(cudaStatus));
 	} total += triangles_kd * sizeof(int);
+	cudaStatus = cudaMemcpy(result.kd_node_triangles, kd_indices_array, triangles_kd * sizeof(int), cudaMemcpyHostToDevice);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMemcpy kdtree failed!: %s\n", cudaGetErrorString(cudaStatus));
+	}
 
-	for (int i = 0; i < nodes_num; i++)
+	/*for (int i = 0; i < nodes_num; i++)
 	{
 		if (kd_tree[i].triangles == NULL) continue;
 		
@@ -90,7 +94,7 @@ gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int ligh
 		if (cudaStatus != cudaSuccess) {
 			fprintf(stderr, "cudaMemcpy kdtree %d failed!: %s\n", i, cudaGetErrorString(cudaStatus));
 		}
-	}
+	}*/
 
 
 	// KD TREE ARRAY

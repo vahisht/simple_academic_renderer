@@ -33,6 +33,8 @@
     <ClInclude Include="include\nffwrite.h">
       <Filter>Original</Filter>
     </ClInclude>
+    <ClInclude Include="sgl\gpu_sgl.cuh" />
+    <ClInclude Include="sgl\primitives.cuh" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Original">
@@ -46,13 +48,7 @@
     <CudaCompile Include="sgl\gpu_sgl.cu">
       <Filter>Renderer</Filter>
     </CudaCompile>
-    <CudaCompile Include="sgl\gpu_sgl.cuh">
-      <Filter>Renderer</Filter>
-    </CudaCompile>
     <CudaCompile Include="sgl\primitives.cu">
-      <Filter>Renderer</Filter>
-    </CudaCompile>
-    <CudaCompile Include="sgl\primitives.cuh">
       <Filter>Renderer</Filter>
     </CudaCompile>
   </ItemGroup>

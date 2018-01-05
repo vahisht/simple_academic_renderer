@@ -53,7 +53,7 @@ struct gpu_data {
 	int* kd_node_triangles;
 };
 
-gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start, int triangles_kd);
+gpu_data cudaInit(int resolution, int triangles_num, int materials_num, int lights_num, int nodes_num, float* invMatrix, kdNodeLinear *kd_tree, Triangle* scene_triangles_array, Material* materials, PointLight* lights, float* ray_start, int triangles_kd, int* kd_indices_array);
 
 void cudaDelete( gpu_data data, float* bitmap, int resolution, int nodes_num, kdNodeLinear* kd_tree);
 

@@ -2197,9 +2197,34 @@ void sglRayTraceScene() {
 	MultVector(ray_start, inv_modelview_matrix);
 
 	int triangles_kd = 0;
-	int tree_depth = kd_scene->getDepth( triangles_kd );
+	int tree_depth = kd_scene->getDepth( /*triangles_kd*/ );
+	int offset = 0;
 
-	cout << triangles_kd << endl;
+	for (int i = 0; i < kd_scene->count(); i++)
+	{
+		if (kd_tree[i].len > 0) {
+			kd_tree[i].gpu_offset = offset;
+			offset += kd_tree[i].len;
+			triangles_kd += kd_tree[i].len;
+		}
+	}
+
+	int* kd_indices_array = new int[triangles_kd];
+	int j = 0;
+	offset = 0;
+
+	for (int i = 0; i < kd_scene->count(); i++)
+	{
+		if (kd_tree[i].len > 0) {
+			for (int j = 0; j < kd_tree[i].len; j++)
+			{
+				kd_indices_array[j + offset] = kd_tree[i].triangles[j];
+			}
+			offset += kd_tree[i].len;
+		}
+	}
+
+	//cout << triangles_kd << endl;
 
 	//cout << "Tree depth: " << tree_depth << ", size of trav structure: " << sizeof(traversal_structure_linear) << endl;
 	//cout << "Required size per thread: " << tree_depth * sizeof(traversal_structure_linear) << endl;
@@ -2208,7 +2233,7 @@ void sglRayTraceScene() {
 	// gpu alloc
 	cout << "[CUDA]\t\tMoving data to GPU" << endl;
 	auto start = std::chrono::high_resolution_clock::now();
-	gpu_data dataObject = cudaInit(active_context->GetHeight()*active_context->GetWidth(), scene->scene_triangles.size(), used_materials.size(), lights_len, kd_scene->count(), inv_matrix, kd_tree, scene_triangles_array, materials, lights, ray_start, triangles_kd);
+	gpu_data dataObject = cudaInit(active_context->GetHeight()*active_context->GetWidth(), scene->scene_triangles.size(), used_materials.size(), lights_len, kd_scene->count(), inv_matrix, kd_tree, scene_triangles_array, materials, lights, ray_start, triangles_kd, kd_indices_array);
 	auto finish = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> elapsed = finish - start;
@@ -2242,6 +2267,8 @@ void sglRayTraceScene() {
 			IlluminateKernelCPU(x, y, ray_start, inv_matrix, active_context->GetWidth(), active_context->GetHeight(), index, V, kd_tree, scene_triangles_array, materials, lights, lights_len, sglGetColorBufferPointer(), tree_depth, scene->scene_triangles.size());
 		}
 	}*/
+
+	delete[] kd_indices_array;
 }
 
 void sglRasterizeScene() {}

@@ -709,7 +709,7 @@ int main(int argc, char **argv)
 	
    /// read in the NFF file
    
-   const char *sceneFile = "Data/A10";
+   //const char *sceneFile = "Data/A10";
    //const char *sceneFile = "Data/Armadillo";
    //const char *sceneFile = "Data/blob";
    //const char *sceneFile = "Data/Park";
@@ -719,7 +719,7 @@ int main(int argc, char **argv)
    //const char *sceneFile = "Data/sibenik";				// pozor na umístìní svìtla
    //const char *sceneFile = "Data/fforest";
    //const char *sceneFile = "Data/conference";
-   //const char *sceneFile = "Data/plysak_normalized";		
+   const char *sceneFile = "Data/plysak_normalized";		
    //const char *sceneFile = "Data/cornellbox-empty-rg";
    //const char *sceneFile = "Data/cornellbox-sphere";
 

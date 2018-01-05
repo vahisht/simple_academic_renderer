@@ -894,21 +894,21 @@ public:
 		return result;
 	}
 
-	int depth(kdNode* node, int & total_triangles) {
+	int depth(kdNode* node/*, int & total_triangles*/) {
 		int left, right;
 
-		left = (node->left == NULL) ? 0 : this->depth( node->left, total_triangles );
-		right = (node->right == NULL) ? 0 : this->depth( node->right, total_triangles);
+		left = (node->left == NULL) ? 0 : this->depth( node->left/*, total_triangles*/ );
+		right = (node->right == NULL) ? 0 : this->depth( node->right/*, total_triangles*/);
 
 		left++; right++;
 
-		if (node->triangles != NULL) total_triangles += node->triangles->size();
+		//if (node->triangles != NULL) total_triangles += node->triangles->size();
 
 		return max(left, right);
 	}
 
-	int getDepth(int & total_triangles) {
-		return depth( this->root, total_triangles ) - 1;
+	int getDepth(/*int & total_triangles*/) {
+		return depth( this->root/*, total_triangles */) - 1;
 	};
 
 	void doTheBuild(Triangle* T, int size) {
